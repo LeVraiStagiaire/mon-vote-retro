@@ -15,15 +15,14 @@ export interface Question {
   axis: AxisId;
   /** `1` si l'accord correspond au pôle positif de l'axe, `-1` au pôle négatif. */
   polarity: 1 | -1;
-  /** Précision factuelle et datée, affichée sous l'énoncé. */
-  note?: string;
+  /** Contexte pédagogique (sigles, mesures, dates, état du droit), affiché dans un bloc repliable. */
+  context: string;
   /** Question institutionnelle : aucun archétype ne détermine la position. */
   open?: boolean;
 }
 
 export interface RawQuestionOptions {
   express?: boolean;
-  note?: string;
   open?: boolean;
 }
 
@@ -36,3 +35,6 @@ export type RawQuestion = [
 ];
 
 export type RawYear = Record<ThemeId, RawQuestion[]>;
+
+/** Contexte pédagogique indexé par identifiant de question (`2012-economie-3`). */
+export type RawContexts = Record<string, string>;

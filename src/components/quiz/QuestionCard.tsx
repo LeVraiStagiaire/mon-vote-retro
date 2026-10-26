@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronDown, Info } from "lucide-react";
 import { THEME_MAP } from "@/data/themes";
 import type { Question } from "@/data/questions";
 import { ThemePill } from "./ThemePill";
@@ -13,6 +15,7 @@ interface QuestionCardProps {
 
 export function QuestionCard({ question, value, onSelect, onSkip, disabled }: QuestionCardProps) {
   const theme = THEME_MAP[question.themeId];
+  const [contextOpen, setContextOpen] = useState(false);
 
   return (
     <div className="rounded-[2rem] border border-ink/8 bg-white p-5 shadow-lift sm:p-9">
@@ -30,15 +33,35 @@ export function QuestionCard({ question, value, onSelect, onSkip, disabled }: Qu
         {question.text}
       </h1>
 
-      {question.note && (
-        <p
-          data-testid="question-note"
-          className="mt-3 max-w-2xl rounded-xl bg-cream/80 px-3 py-2 text-[12px] leading-relaxed text-ink/50"
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => setContextOpen((open) => !open)}
+          aria-expanded={contextOpen}
+          aria-controls="question-context"
+          data-testid="question-context-toggle"
+          className="inline-flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-[13px] font-medium text-ink/55 transition-colors hover:bg-cream hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
-          <span className="font-semibold text-ink/60">Repère : </span>
-          {question.note}
-        </p>
-      )}
+          <Info className="h-4 w-4 shrink-0 text-ink/35" aria-hidden="true" />
+          <span className="flex-1">Le contexte de cette question</span>
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-ink/35 transition-transform duration-300 ease-soft ${
+              contextOpen ? "rotate-180" : ""
+            }`}
+            aria-hidden="true"
+          />
+        </button>
+
+        {contextOpen && (
+          <div
+            id="question-context"
+            data-testid="question-context"
+            className="mt-2 max-w-2xl animate-fade-slide-in rounded-2xl border border-ink/6 bg-cream/70 px-4 py-3 text-[13px] leading-relaxed text-ink/65"
+          >
+            {question.context}
+          </div>
+        )}
+      </div>
 
       <p className="mt-3 text-sm text-ink/45">
         Êtes-vous d'accord avec cette proposition&nbsp;?

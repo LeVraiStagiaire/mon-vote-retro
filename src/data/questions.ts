@@ -2,12 +2,12 @@ import { shuffleWithSeed } from "@/lib/shuffle";
 import { AXIS_MAP } from "./axes";
 import { YEARS, type ElectionYear } from "./elections";
 import { THEME_IDS } from "./themes";
-import { RAW_2002 } from "./questions/2002";
-import { RAW_2007 } from "./questions/2007";
-import { RAW_2012 } from "./questions/2012";
-import { RAW_2017 } from "./questions/2017";
-import { RAW_2022 } from "./questions/2022";
-import type { Question, QuizMode, RawYear } from "./questions/types";
+import { CONTEXT_2002, RAW_2002 } from "./questions/2002";
+import { CONTEXT_2007, RAW_2007 } from "./questions/2007";
+import { CONTEXT_2012, RAW_2012 } from "./questions/2012";
+import { CONTEXT_2017, RAW_2017 } from "./questions/2017";
+import { CONTEXT_2022, RAW_2022 } from "./questions/2022";
+import type { Question, QuizMode, RawContexts, RawYear } from "./questions/types";
 
 export type { Question, QuizMode } from "./questions/types";
 
@@ -20,10 +20,19 @@ const BANKS: Record<ElectionYear, RawYear> = {
   2022: RAW_2022,
 };
 
+/** Un contexte pédagogique par identifiant de question du scrutin. */
+const CONTEXTS: Record<ElectionYear, RawContexts> = {
+  2002: CONTEXT_2002,
+  2007: CONTEXT_2007,
+  2012: CONTEXT_2012,
+  2017: CONTEXT_2017,
+  2022: CONTEXT_2022,
+};
+
 const QUESTIONS_PER_THEME = 10;
 const EXPRESS_PER_THEME = 2;
 
-function buildYear(year: ElectionYear, raw: RawYear): Question[] {
+function buildYear(year: ElectionYear, raw: RawYear, contexts: RawContexts): Question[] {
   const questions: Question[] = [];
   for (const themeId of THEME_IDS) {
     const entries = raw[themeId];
@@ -31,15 +40,20 @@ function buildYear(year: ElectionYear, raw: RawYear): Question[] {
       throw new Error(`Banque ${year} : thème « ${themeId} » absent.`);
     }
     entries.forEach(([text, axis, polarity, options], index) => {
+      const id = `${year}-${themeId}-${index + 1}`;
+      const context = contexts[id];
+      if (!context || !context.trim()) {
+        throw new Error(`Contexte manquant pour la question ${id}.`);
+      }
       questions.push({
-        id: `${year}-${themeId}-${index + 1}`,
+        id,
         year,
         themeId,
         text,
         express: options?.express === true,
         axis,
         polarity,
-        note: options?.note,
+        context: context.trim(),
         open: options?.open === true,
       });
     });
@@ -49,7 +63,7 @@ function buildYear(year: ElectionYear, raw: RawYear): Question[] {
 
 export const QUESTIONS_BY_YEAR: Record<ElectionYear, Question[]> = YEARS.reduce(
   (acc, year) => {
-    acc[year] = buildYear(year, BANKS[year]);
+    acc[year] = buildYear(year, BANKS[year], CONTEXTS[year]);
     return acc;
   },
   {} as Record<ElectionYear, Question[]>,
@@ -105,7 +119,7 @@ export function orderedQuestions(
   return seed == null ? base : shuffleWithSeed(base, seed);
 }
 
-/** Contrôles d'intégrité des cinq banques, exécutés à l'import. */
+/** Contrôles d'intégrité des cinq banques et de leurs contextes, exécutés à l'import. */
 function validateBanks(): void {
   const ids = new Set<string>();
 
@@ -144,6 +158,26 @@ function validateBanks(): void {
       }
       if (question.polarity !== 1 && question.polarity !== -1) {
         throw new Error(`Polarité invalide pour ${question.id} : ${question.polarity}`);
+      }
+      if (!question.context) {
+        throw new Error(`Contexte vide pour ${question.id}.`);
+      }
+    }
+
+    const contexts = CONTEXTS[year];
+    const contextKeys = Object.keys(contexts);
+    if (contextKeys.length !== questions.length) {
+      throw new Error(
+        `Contexte ${year} : ${contextKeys.length} entrées au lieu de ${questions.length}.`,
+      );
+    }
+    const yearIds = new Set(questions.map((question) => question.id));
+    for (const key of contextKeys) {
+      if (!yearIds.has(key)) {
+        throw new Error(`Contexte orphelin pour ${year} : aucune question ${key}.`);
+      }
+      if (!contexts[key] || !contexts[key].trim()) {
+        throw new Error(`Contexte vide pour ${year} : ${key}.`);
       }
     }
   }

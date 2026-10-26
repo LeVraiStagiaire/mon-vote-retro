@@ -111,6 +111,37 @@ test("changer d'époque avec des réponses existantes demande une confirmation",
   await expect(page.getByTestId("question-text")).toBeVisible();
 });
 
+test("le contexte de chaque question est replié par défaut et se referme à la question suivante", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByTestId("era-2012").click();
+  await page.getByTestId("start-quiz").click();
+  await expect(page.getByTestId("question-counter")).toHaveText("Question 1 / 20");
+
+  // Fermé par défaut, y compris sur la première question
+  const toggle = page.getByTestId("question-context-toggle");
+  await expect(toggle).toContainText("Le contexte de cette question");
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByTestId("question-context")).toHaveCount(0);
+
+  // L'ancien encadré « Repère » a disparu
+  await expect(page.getByTestId("question-note")).toHaveCount(0);
+
+  // Ouverture : le panneau apparaît avec un texte non vide
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  const panel = page.getByTestId("question-context");
+  await expect(panel).toBeVisible();
+  expect((await panel.innerText()).trim().length).toBeGreaterThan(40);
+
+  // Répondre fait passer à la question suivante, où le panneau est de nouveau replié
+  await page.getByTestId("answer-2").click();
+  await expect(page.getByTestId("question-counter")).toHaveText("Question 2 / 20");
+  await expect(page.getByTestId("question-context")).toHaveCount(0);
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+});
+
 test("les pages de résultats sont protégées sans session", async ({ page }) => {
   await page.goto("/#/resultats");
   await expect(page).toHaveURL(/#\/$/);

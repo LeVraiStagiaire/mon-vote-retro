@@ -41,6 +41,12 @@ const Methode = () => {
               doublon d'un scrutin à l'autre.
             </li>
             <li>
+              <span className="font-semibold text-ink">Un contexte pédagogique par question</span> :
+              les {TOTAL_QUESTIONS} énoncés sont accompagnés d'un repère repliable — sigles développés,
+              mesure concernée, montants, dates et état du droit à l'époque du scrutin — accessible en
+              un clic sous la question, sans quitter le questionnaire.
+            </li>
+            <li>
               <span className="font-semibold text-ink">Quatorze archétypes idéologiques</span> (extrême
               gauche, gauche radicale, social-démocratie, écologie politique, centre social-libéral,
               droite libérale, droite gaulliste, droite conservatrice, souverainisme, droite nationale,

@@ -33,8 +33,8 @@ convictions aux débats d'une campagne et découvrir un peu d'histoire politique
 
 Chaque scrutin a **son propre questionnaire de 100 questions**, rédigé avec les débats, les
 mesures et le vocabulaire de l'année. Les grands principes reviennent parfois d'une campagne
-à l'autre — c'est la nature du débat politique — mais les mesures citées, les notes de
-contexte et les enjeux de campagne sont propres à chaque élection. C'est ce qui évite les
+à l'autre — c'est la nature du débat politique — mais les mesures citées, les contextes
+pédagogiques et les enjeux de campagne sont propres à chaque élection. C'est ce qui évite les
 anachronismes (les zones à faibles émissions en 2002, le quinquennat en 2022…).
 
 | Année | Ce qui domine la campagne | Un repère |
@@ -65,9 +65,11 @@ le format **Complet** pose les 100 questions de l'année.
 - **Reprise automatique** : vos réponses sont enregistrées au fil de l'eau dans votre
   navigateur. Un bandeau « Questionnaire en cours » sur l'accueil permet de reprendre ou
   d'effacer.
-- **Notes de contexte** : certaines questions citent une mesure précise. Un petit encadré
-  « Repère » rappelle alors les dates exactes (par exemple : le CICE a été créé en 2013 et
-  supprimé en 2019).
+- **Le contexte de chaque question** : les 500 énoncés disposent d'un bloc repliable « Le
+  contexte de cette question », fermé par défaut, qui développe les sigles, rappelle la mesure
+  concernée, les montants, les dates et l'état du droit à l'époque du scrutin (par exemple : le
+  CICE a été créé en 2013 et supprimé en 2019). Il reste factuel et ne dit jamais quelle réponse
+  donner.
 - **Changer d'époque en cours de route** efface les réponses déjà données : un dialogue de
   confirmation vous prévient avant, puisque les questions ne sont pas transposables d'un
   scrutin à l'autre.
