@@ -32,7 +32,7 @@ export function ModeSelector({ mode, onSelect }: ModeSelectorProps) {
       <h2 className="text-3xl text-ink sm:text-4xl">2. Choisissez le format</h2>
       <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink/60">
         Les deux formats utilisent les mêmes 10 thèmes. L'Express réutilise 20 questions du Complet,
-        aucune donnée n'est dupliquée.
+        aucune donnée n'est dupliquée. L'ordre des questions est tiré au sort à chaque nouvelle partie.
       </p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">

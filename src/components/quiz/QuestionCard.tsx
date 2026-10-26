@@ -23,7 +23,10 @@ export function QuestionCard({ question, value, onSelect, onSkip, disabled }: Qu
         </span>
       </div>
 
-      <h1 className="mt-6 text-balance font-display text-[1.75rem] leading-[1.15] text-ink sm:text-4xl">
+      <h1
+        className="mt-6 text-balance font-display text-[1.75rem] leading-[1.15] text-ink sm:text-4xl"
+        data-testid="question-text"
+      >
         {question.text}
       </h1>
 

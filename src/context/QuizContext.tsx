@@ -8,9 +8,10 @@ import {
   type ReactNode,
 } from "react";
 import type { ElectionYear } from "@/data/elections";
-import { questionSet, type Question, type QuizMode } from "@/data/questions";
+import { orderedQuestions, type Question, type QuizMode } from "@/data/questions";
 import type { ThemeId } from "@/data/themes";
 import { DEFAULT_WEIGHTS, answeredCount, type Answers, type Weights } from "@/lib/scoring";
+import { randomSeed } from "@/lib/shuffle";
 import type { SharedPayload } from "@/lib/share";
 import {
   EMPTY_SESSION,
@@ -48,14 +49,18 @@ function reducer(state: QuizSession, action: Action): QuizSession {
     case "selectYear":
       return { ...state, year: action.year };
     case "setMode": {
-      const questions = questionSet(action.mode);
+      const questions = orderedQuestions(action.mode, state.seed);
       const index = state.status === "running" ? firstUnanswered(state.answers, questions) : 0;
       return { ...state, mode: action.mode, index };
     }
     case "start": {
-      const questions = questionSet(state.mode);
+      // Nouvelle graine uniquement si la partie n'en a pas encore : reprendre
+      // une session ne rebat pas les cartes.
+      const seed = state.seed ?? randomSeed();
+      const questions = orderedQuestions(state.mode, seed);
       return {
         ...state,
+        seed,
         status: "running",
         index: firstUnanswered(state.answers, questions),
       };
@@ -66,18 +71,18 @@ function reducer(state: QuizSession, action: Action): QuizSession {
         answers: { ...state.answers, [action.questionId]: action.value },
       };
     case "goTo": {
-      const questions = questionSet(state.mode);
+      const questions = orderedQuestions(state.mode, state.seed);
       return { ...state, index: clampIndex(action.index, questions.length) };
     }
     case "next": {
-      const questions = questionSet(state.mode);
+      const questions = orderedQuestions(state.mode, state.seed);
       if (state.index >= questions.length - 1) {
         return { ...state, index: questions.length - 1, status: "done" };
       }
       return { ...state, index: state.index + 1 };
     }
     case "previous": {
-      const questions = questionSet(state.mode);
+      const questions = orderedQuestions(state.mode, state.seed);
       return { ...state, index: clampIndex(state.index - 1, questions.length) };
     }
     case "setWeight":
@@ -99,7 +104,7 @@ function reducer(state: QuizSession, action: Action): QuizSession {
         weights: { ...DEFAULT_WEIGHTS },
       };
     case "hydrate": {
-      const questions = questionSet(action.session.mode);
+      const questions = orderedQuestions(action.session.mode, null);
       return {
         year: action.session.year,
         mode: action.session.mode,
@@ -107,6 +112,7 @@ function reducer(state: QuizSession, action: Action): QuizSession {
         weights: action.session.weights,
         index: firstUnanswered(action.session.answers, questions),
         status: "done",
+        seed: null,
       };
     }
     default:
@@ -152,8 +158,14 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     saveSession(session);
   }, [session]);
 
-  const questions = useMemo(() => questionSet(session.mode), [session.mode]);
-  const answered = useMemo(() => answeredCount(session.answers, questions), [session.answers, questions]);
+  const questions = useMemo(
+    () => orderedQuestions(session.mode, session.seed),
+    [session.mode, session.seed],
+  );
+  const answered = useMemo(
+    () => answeredCount(session.answers, questions),
+    [session.answers, questions],
+  );
   const currentQuestion = questions[session.index] ?? null;
 
   const value = useMemo<QuizContextValue>(() => {

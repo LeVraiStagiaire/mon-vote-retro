@@ -14,6 +14,8 @@ export interface QuizSession {
   weights: Weights;
   index: number;
   status: SessionStatus;
+  /** Graine du mélange des questions : garantit un ordre stable pendant la partie. */
+  seed: number | null;
 }
 
 export const EMPTY_SESSION: QuizSession = {
@@ -23,6 +25,7 @@ export const EMPTY_SESSION: QuizSession = {
   weights: DEFAULT_WEIGHTS,
   index: 0,
   status: "idle",
+  seed: null,
 };
 
 export function loadSession(): QuizSession | null {
@@ -59,7 +62,12 @@ export function loadSession(): QuizSession | null {
     const index =
       typeof parsed.index === "number" && parsed.index >= 0 ? Math.floor(parsed.index) : 0;
 
-    return { year, mode, answers, weights, index, status };
+    const seed =
+      typeof parsed.seed === "number" && Number.isFinite(parsed.seed) && parsed.seed > 0
+        ? Math.floor(parsed.seed)
+        : null;
+
+    return { year, mode, answers, weights, index, status, seed };
   } catch {
     return null;
   }

@@ -6,6 +6,9 @@ calcule la proximité avec les 61 candidats du 1er tour et affiche pour qui on a
 probablement voté — avec pondération par thème, radar, fiches candidats, lien de partage
 et export du classement en image PNG.
 
+L'ordre des questions est tiré au sort à chaque nouvelle partie (graine conservée dans la
+session : l'ordre reste identique si l'on recharge la page en cours de route).
+
 Aucun backend : réponses et poids restent dans le `localStorage` du navigateur.
 
 ## Développement

@@ -1,3 +1,4 @@
+import { shuffleWithSeed } from "@/lib/shuffle";
 import { THEME_IDS, type ThemeId } from "./themes";
 
 export interface Question {
@@ -166,4 +167,14 @@ export function questionSet(mode: QuizMode): Question[] {
 
 export function questionCountForMode(mode: QuizMode): number {
   return mode === "express" ? EXPRESS_QUESTIONS.length : QUESTIONS.length;
+}
+
+/**
+ * Questions dans l'ordre de la session : mélangées à partir de la graine
+ * (donc stables d'un rendu et d'un rechargement à l'autre). Sans graine, on
+ * retombe sur l'ordre par thème.
+ */
+export function orderedQuestions(mode: QuizMode, seed: number | null): Question[] {
+  const base = questionSet(mode);
+  return seed == null ? base : shuffleWithSeed(base, seed);
 }

@@ -57,3 +57,44 @@ test("les pages de résultats sont protégées sans session", async ({ page }) =
   await expect(page.getByRole("heading", { name: /Pour qui auriez-vous/ })).toBeVisible();
   await expect(page.getByTestId("winner-name")).toHaveCount(0);
 });
+
+test("l'ordre des questions est mélangé mais stable pendant la session", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("era-2012").click();
+  await page.getByTestId("start-quiz").click();
+  await expect(page.getByTestId("question-counter")).toHaveText("Question 1 / 20");
+
+  // Une graine de mélange est tirée au sort au démarrage de la partie
+  const seed = await page.evaluate(
+    () => JSON.parse(window.localStorage.getItem("monvote:session:v1") ?? "{}").seed,
+  );
+  expect(typeof seed).toBe("number");
+  expect(seed).toBeGreaterThan(0);
+
+  // L'ordre ne change pas au rechargement (on retrouve la même question)
+  await page.getByTestId("answer-2").click();
+  await expect(page.getByTestId("question-counter")).toHaveText("Question 2 / 20");
+  const secondQuestion = await page.getByTestId("question-text").innerText();
+  await page.reload();
+  await expect(page.getByTestId("question-counter")).toHaveText("Question 2 / 20");
+  await expect(page.getByTestId("question-text")).toHaveText(secondQuestion);
+
+  // Deux graines différentes donnent deux ordres différents
+  const withSeed = async (value: number) => {
+    await page.evaluate((nextSeed) => {
+      const raw = window.localStorage.getItem("monvote:session:v1") ?? "{}";
+      const session = JSON.parse(raw);
+      window.localStorage.setItem(
+        "monvote:session:v1",
+        JSON.stringify({ ...session, answers: {}, index: 0, seed: nextSeed }),
+      );
+    }, value);
+    await page.reload();
+    await expect(page.getByTestId("question-counter")).toHaveText("Question 1 / 20");
+    return page.getByTestId("question-text").innerText();
+  };
+
+  const orderA = await withSeed(424242);
+  const orderB = await withSeed(987654321);
+  expect(orderA).not.toBe(orderB);
+});

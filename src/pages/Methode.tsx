@@ -152,7 +152,8 @@ const Methode = () => {
             <p className="text-xs text-ink/45">
               Volume de la base : {QUESTIONS.length} questions, {THEMES.length} thèmes, {ARCHETYPES.length}{" "}
               archétypes ({ARCHETYPES.length * QUESTIONS.length} positions) et {CANDIDATES.length}{" "}
-              candidats.
+              candidats. Les questions sont présentées dans un ordre mélangé, tiré au sort à chaque
+              partie (et conservé pendant toute la session).
             </p>
           </div>
         </section>
