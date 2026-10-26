@@ -1,4 +1,5 @@
 import { ThumbsDown, ThumbsUp, Minus } from "lucide-react";
+import { Reveal } from "@/components/Reveal";
 import { positionsOf, type Candidate } from "@/data/candidates";
 import { QUESTIONS } from "@/data/questions";
 import { THEMES } from "@/data/themes";
@@ -25,7 +26,7 @@ export function PositionList({ candidate, answers, hasAnswers }: PositionListPro
 
   return (
     <div className="space-y-4">
-      {THEMES.map((theme) => {
+      {THEMES.map((theme, themeIndex) => {
         const questions = QUESTIONS.filter((question) => question.themeId === theme.id);
         const Icon = theme.icon;
         const compared = questions.filter((question) => {
@@ -46,11 +47,11 @@ export function PositionList({ candidate, answers, hasAnswers }: PositionListPro
               ) / compared.length;
 
         return (
-          <section
-            key={theme.id}
-            id={`theme-${theme.id}`}
-            className="scroll-mt-24 rounded-[1.75rem] border border-ink/8 bg-white p-4 shadow-soft sm:p-5"
-          >
+          <Reveal key={theme.id} delay={Math.min(themeIndex * 40, 200)} y={12}>
+            <section
+              id={`theme-${theme.id}`}
+              className="scroll-mt-24 rounded-[1.75rem] border border-ink/8 bg-white p-4 shadow-soft sm:p-5"
+            >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <span
@@ -116,7 +117,8 @@ export function PositionList({ candidate, answers, hasAnswers }: PositionListPro
                 );
               })}
             </ul>
-          </section>
+            </section>
+          </Reveal>
         );
       })}
     </div>

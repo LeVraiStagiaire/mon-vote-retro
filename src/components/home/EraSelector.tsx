@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import { Reveal } from "@/components/Reveal";
 import { ELECTIONS, type ElectionYear } from "@/data/elections";
 import { candidatesForYear } from "@/data/candidates";
 import { cn } from "@/lib/utils";
@@ -23,46 +24,51 @@ export function EraSelector({ selectedYear, onSelect }: EraSelectorProps) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {ELECTIONS.map((election) => {
+        {ELECTIONS.map((election, index) => {
           const selected = selectedYear === election.year;
           const candidates = candidatesForYear(election.year);
           return (
-            <button
-              key={election.year}
-              type="button"
-              onClick={() => onSelect(election.year)}
-              aria-pressed={selected}
-              data-testid={`era-${election.year}`}
-              className={cn(
-                "group relative flex flex-col justify-between gap-5 rounded-[1.75rem] border bg-white p-5 text-left transition-all duration-300",
-                selected
-                  ? "border-primary/40 bg-lavender/40 shadow-lift ring-2 ring-primary"
-                  : "border-ink/8 shadow-soft hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-lift",
-              )}
-            >
-              <div>
-                <div className="flex items-start justify-between">
-                  <span className="font-display text-4xl leading-none text-ink">{election.year}</span>
-                  <span
-                    className={cn(
-                      "grid h-6 w-6 place-items-center rounded-full transition",
-                      selected ? "bg-primary text-cream" : "bg-ink/5 text-transparent",
-                    )}
-                  >
-                    <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                  </span>
+            <Reveal key={election.year} delay={index * 60} className="h-full">
+              <button
+                type="button"
+                onClick={() => onSelect(election.year)}
+                aria-pressed={selected}
+                data-testid={`era-${election.year}`}
+                className={cn(
+                  "group relative flex h-full flex-col justify-between gap-5 rounded-[1.75rem] border bg-white p-5 text-left transition-all duration-300 active:scale-[0.99]",
+                  selected
+                    ? "border-primary/40 bg-lavender/40 shadow-lift ring-2 ring-primary"
+                    : "border-ink/8 shadow-soft hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-lift",
+                )}
+              >
+                <div>
+                  <div className="flex items-start justify-between">
+                    <span className="font-display text-4xl leading-none text-ink">{election.year}</span>
+                    <span
+                      className={cn(
+                        "grid h-6 w-6 place-items-center rounded-full transition-colors",
+                        selected
+                          ? "animate-ring-in bg-primary text-cream"
+                          : "bg-ink/5 text-transparent",
+                      )}
+                    >
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm font-semibold leading-snug text-ink/80">{election.tagline}</p>
                 </div>
-                <p className="mt-3 text-sm font-semibold leading-snug text-ink/80">{election.tagline}</p>
-              </div>
 
-              <div className="space-y-1.5">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-ink/35">Vainqueur du 1er tour</p>
-                <p className="text-sm font-medium text-ink">{election.firstRoundWinner}</p>
-                <p className="text-xs text-ink/45">
-                  {candidates.length} candidats · {election.date}
-                </p>
-              </div>
-            </button>
+                <div className="space-y-1.5">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-ink/35">
+                    Vainqueur du 1er tour
+                  </p>
+                  <p className="text-sm font-medium text-ink">{election.firstRoundWinner}</p>
+                  <p className="text-xs text-ink/45">
+                    {candidates.length} candidats · {election.date}
+                  </p>
+                </div>
+              </button>
+            </Reveal>
           );
         })}
       </div>

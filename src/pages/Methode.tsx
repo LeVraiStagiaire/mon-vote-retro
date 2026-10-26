@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Calculator, Database, Eye, ShieldCheck } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
+import { Reveal } from "@/components/Reveal";
 import { ARCHETYPES } from "@/data/archetypes";
 import { CANDIDATES } from "@/data/candidates";
 import { QUESTIONS } from "@/data/questions";
@@ -21,7 +22,7 @@ const Methode = () => {
         </p>
       </header>
 
-      <div className="mt-8 space-y-4">
+      <Reveal className="mt-8 space-y-4">
         <section className="rounded-[1.75rem] border border-ink/8 bg-white p-6 shadow-soft">
           <div className="flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-lavender text-primary">
@@ -192,21 +193,24 @@ const Methode = () => {
             ))}
           </div>
         </section>
-      </div>
+      </Reveal>
 
-      <div className="mt-8 rounded-[2rem] bg-primary px-6 py-8 text-center sm:px-10">
-        <h2 className="font-display text-3xl text-cream">Prêt à tester vos convictions ?</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-cream/70">
-          Vingt questions suffisent pour une première tendance, cent pour un classement vraiment détaillé.
-        </p>
-        <Link
-          to="/"
-          className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-cream px-6 text-sm font-semibold text-primary transition hover:bg-white"
-        >
-          Choisir une époque
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
+      <Reveal>
+        <div className="mt-8 rounded-[2rem] bg-primary px-6 py-8 text-center sm:px-10">
+          <h2 className="font-display text-3xl text-cream">Prêt à tester vos convictions ?</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-cream/70">
+            Vingt questions suffisent pour une première tendance, cent pour un classement vraiment
+            détaillé.
+          </p>
+          <Link
+            to="/"
+            className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-cream px-6 text-sm font-semibold text-primary transition hover:bg-white active:scale-[0.98]"
+          >
+            Choisir une époque
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </Reveal>
 
       <p className="mt-6 text-center text-xs text-ink/40">
         Outil indépendant, non affilié à un parti politique ni à une administration.

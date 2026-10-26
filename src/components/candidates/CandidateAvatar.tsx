@@ -26,6 +26,7 @@ export function CandidateAvatar({ candidate, size = "md", className }: Candidate
     () => readCachedThumbnail(candidate.wikiTitle) ?? null,
   );
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const cached = readCachedThumbnail(candidate.wikiTitle);
@@ -65,8 +66,12 @@ export function CandidateAvatar({ candidate, size = "md", className }: Candidate
           alt=""
           loading="lazy"
           decoding="async"
+          onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
-          className="h-full w-full object-cover object-top"
+          className={cn(
+            "h-full w-full object-cover object-top transition-opacity duration-500",
+            loaded ? "opacity-100" : "opacity-0",
+          )}
         />
       ) : (
         <span className="font-display text-primary/80">{initials(candidate)}</span>

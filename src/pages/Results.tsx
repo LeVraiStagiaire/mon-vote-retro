@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle, ArrowRight, TriangleAlert } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
+import { Reveal } from "@/components/Reveal";
 import { ResultHero } from "@/components/results/ResultHero";
 import { RankingList } from "@/components/results/RankingList";
 import { ThemeWeights } from "@/components/results/ThemeWeights";
@@ -105,7 +106,7 @@ const Results = () => {
       </div>
 
       {answered < MIN_ANSWERS ? (
-        <section className="mt-4 rounded-[2rem] border border-ink/8 bg-white p-7 shadow-lift sm:p-10">
+        <section className="mt-4 animate-pop-in rounded-[2rem] border border-ink/8 bg-white p-7 shadow-lift sm:p-10">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-lavender text-primary">
             <AlertCircle className="h-5 w-5" />
           </span>
@@ -129,7 +130,7 @@ const Results = () => {
           </button>
         </section>
       ) : !weightsOk ? (
-        <section className="mt-4 rounded-[2rem] border border-ink/8 bg-white p-7 shadow-lift sm:p-10">
+        <section className="mt-4 animate-pop-in rounded-[2rem] border border-ink/8 bg-white p-7 shadow-lift sm:p-10">
           <h1 className="font-display text-3xl text-ink sm:text-4xl">Tous les thèmes sont à zéro</h1>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink/60">
             Avec une pondération nulle partout, aucun score n'est calculable. Remontez au moins un
@@ -139,30 +140,44 @@ const Results = () => {
         </section>
       ) : (
         <div className="mt-4 space-y-4">
-          {champion && <ResultHero scored={champion} year={year} answered={answered} />}
+          {champion && (
+            <Reveal y={12}>
+              <ResultHero scored={champion} year={year} answered={answered} />
+            </Reveal>
+          )}
 
           <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-4">
-              <RankingList
-                ranking={ranking}
-                year={year}
-                mode={session.mode}
-                answered={answered}
-                total={questions.length}
-              />
-              <ThemeWeights />
+              <Reveal delay={80}>
+                <RankingList
+                  ranking={ranking}
+                  year={year}
+                  mode={session.mode}
+                  answered={answered}
+                  total={questions.length}
+                />
+              </Reveal>
+              <Reveal delay={140}>
+                <ThemeWeights />
+              </Reveal>
             </div>
             <div className="space-y-4">
               {champion && (
-                <ThemeRadar
-                  candidate={champion.candidate}
-                  answers={answers}
-                  year={year}
-                  mode={session.mode}
-                />
+                <Reveal delay={120}>
+                  <ThemeRadar
+                    candidate={champion.candidate}
+                    answers={answers}
+                    year={year}
+                    mode={session.mode}
+                  />
+                </Reveal>
               )}
-              <EraSwitch />
-              <ShareBar />
+              <Reveal delay={180}>
+                <EraSwitch />
+              </Reveal>
+              <Reveal delay={240}>
+                <ShareBar />
+              </Reveal>
             </div>
           </div>
         </div>

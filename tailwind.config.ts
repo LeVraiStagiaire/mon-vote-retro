@@ -86,6 +86,9 @@ export default {
         md: "calc(var(--radius) - 4px)",
         sm: "calc(var(--radius) - 8px)",
       },
+      transitionTimingFunction: {
+        soft: "cubic-bezier(0.22, 1, 0.36, 1)",
+      },
       boxShadow: {
         soft: "0 1px 2px hsl(249 33% 14% / 0.04), 0 12px 32px -12px hsl(249 33% 14% / 0.14)",
         lift: "0 2px 4px hsl(249 33% 14% / 0.05), 0 24px 60px -24px hsl(249 33% 14% / 0.22)",
@@ -111,6 +114,19 @@ export default {
           "0%": { opacity: "0", transform: "scale(0.94)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
+        "enter-forward": {
+          "0%": { opacity: "0", transform: "translate3d(0, 16px, 0)" },
+          "100%": { opacity: "1", transform: "none" },
+        },
+        "enter-backward": {
+          "0%": { opacity: "0", transform: "translate3d(0, -16px, 0)" },
+          "100%": { opacity: "1", transform: "none" },
+        },
+        "ring-in": {
+          "0%": { transform: "scale(0.6)", opacity: "0" },
+          "60%": { transform: "scale(1.08)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -118,6 +134,9 @@ export default {
         "reveal-up": "reveal-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both",
         "fade-slide-in": "fade-slide-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
         "pop-in": "pop-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "enter-forward": "enter-forward 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "enter-backward": "enter-backward 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "ring-in": "ring-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
   },

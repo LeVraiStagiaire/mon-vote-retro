@@ -57,7 +57,7 @@ export function RankingList({ ranking, year, mode, answered, total }: RankingLis
             onClick={handleExport}
             disabled={exporting}
             data-testid="export-ranking-image"
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-ink/10 bg-white px-3.5 text-xs font-semibold text-ink/65 transition hover:border-primary/30 hover:text-primary disabled:cursor-progress disabled:opacity-70"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-ink/10 bg-white px-3.5 text-xs font-semibold text-ink/65 transition hover:border-primary/30 hover:text-primary active:scale-[0.98] disabled:cursor-progress disabled:opacity-70"
           >
             {exporting ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -71,7 +71,7 @@ export function RankingList({ ranking, year, mode, answered, total }: RankingLis
 
       <div className="mt-3 space-y-1">
         {ranking.map((scored, index) => (
-          <RankingRow key={scored.candidate.id} scored={scored} rank={index + 1} />
+          <RankingRow key={scored.candidate.id} scored={scored} rank={index + 1} index={index} />
         ))}
       </div>
 

@@ -7,6 +7,7 @@ import { ModeSelector } from "@/components/home/ModeSelector";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { MethodCallout } from "@/components/home/MethodCallout";
 import { ResumeBanner } from "@/components/quiz/ResumeBanner";
+import { Reveal } from "@/components/Reveal";
 import { useQuiz } from "@/context/QuizContext";
 import { ELECTION_MAP } from "@/data/elections";
 import { questionCountForMode } from "@/data/questions";
@@ -52,7 +53,7 @@ const Index = () => {
                   type="button"
                   onClick={handleStart}
                   data-testid="start-quiz"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-7 text-sm font-semibold text-cream shadow-soft transition hover:bg-primary/90"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-7 text-sm font-semibold text-cream shadow-soft transition hover:bg-primary/90 active:scale-[0.98]"
                 >
                   Commencer le questionnaire
                   <ArrowRight className="h-4 w-4" />
@@ -71,20 +72,22 @@ const Index = () => {
         <HowItWorks />
         <MethodCallout />
 
-        <section className="rounded-[2rem] border border-ink/8 bg-white p-6 shadow-soft sm:p-8">
-          <div className="grid gap-6 sm:grid-cols-3">
-            {[
-              { value: "61", label: "candidats du 1er tour" },
-              { value: "10", label: "thèmes, 10 questions chacun" },
-              { value: "0", label: "donnée personnelle collectée" },
-            ].map((stat) => (
-              <div key={stat.label} className={cn("text-center sm:text-left")}>
-                <p className="font-display text-5xl leading-none text-primary">{stat.value}</p>
-                <p className="mt-2 text-sm text-ink/55">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Reveal>
+          <section className="rounded-[2rem] border border-ink/8 bg-white p-6 shadow-soft sm:p-8">
+            <div className="grid gap-6 sm:grid-cols-3">
+              {[
+                { value: "61", label: "candidats du 1er tour" },
+                { value: "10", label: "thèmes, 10 questions chacun" },
+                { value: "0", label: "donnée personnelle collectée" },
+              ].map((stat) => (
+                <div key={stat.label} className={cn("text-center sm:text-left")}>
+                  <p className="font-display text-5xl leading-none text-primary">{stat.value}</p>
+                  <p className="mt-2 text-sm text-ink/55">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </Reveal>
       </div>
     </PageShell>
   );

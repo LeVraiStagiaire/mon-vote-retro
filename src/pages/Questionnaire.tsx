@@ -9,6 +9,7 @@ import { ThemePill } from "@/components/quiz/ThemePill";
 import { useQuiz } from "@/context/QuizContext";
 import { ELECTION_MAP } from "@/data/elections";
 import { THEME_MAP } from "@/data/themes";
+import { cn } from "@/lib/utils";
 
 const KEY_VALUES: Record<string, number> = {
   "1": -2,
@@ -23,6 +24,7 @@ const Questionnaire = () => {
   const { session, questions, currentQuestion, answered, answer, next, previous, finish } = useQuiz();
   const [selected, setSelected] = useState<number | null | undefined>(undefined);
   const [interlude, setInterlude] = useState(false);
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const halfShown = useRef(false);
   const timer = useRef<number | null>(null);
 
@@ -37,6 +39,7 @@ const Questionnaire = () => {
     (value: number | null) => {
       if (!currentQuestion) return;
       setSelected(value);
+      setDirection("forward");
       if (timer.current) window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => {
         answer(currentQuestion.id, value);
@@ -66,6 +69,7 @@ const Questionnaire = () => {
 
       if (event.key === "ArrowLeft") {
         event.preventDefault();
+        setDirection("backward");
         previous();
         return;
       }
@@ -99,7 +103,7 @@ const Questionnaire = () => {
   if (interlude) {
     return (
       <PageShell width="narrow" className="pb-16 pt-8 sm:pt-12">
-        <div className="rounded-[2rem] border border-ink/8 bg-white p-7 text-center shadow-lift sm:p-12">
+        <div className="animate-pop-in rounded-[2rem] border border-ink/8 bg-white p-7 text-center shadow-lift sm:p-12">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
             À mi-parcours
           </p>
@@ -150,7 +154,13 @@ const Questionnaire = () => {
         <QuizProgress index={session.index} total={questions.length} answered={answered} />
       </div>
 
-      <div key={currentQuestion.id} className="mt-5 animate-fade-slide-in">
+      <div
+        key={currentQuestion.id}
+        className={cn(
+          "mt-5",
+          direction === "forward" ? "animate-enter-forward" : "animate-enter-backward",
+        )}
+      >
         <QuestionCard
           question={currentQuestion}
           value={currentValue}
@@ -161,8 +171,12 @@ const Questionnaire = () => {
 
       <div className="mt-5">
         <QuizNav
-          onPrevious={previous}
+          onPrevious={() => {
+            setDirection("backward");
+            previous();
+          }}
           onNext={() => {
+            setDirection("forward");
             if (isLast) {
               finish();
               navigate("/resultats");

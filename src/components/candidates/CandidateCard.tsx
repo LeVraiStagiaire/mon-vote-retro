@@ -18,7 +18,7 @@ export function CandidateCard({ candidate, scored }: CandidateCardProps) {
     <Link
       to={`/candidat/${candidate.id}`}
       data-testid={`candidate-card-${candidate.id}`}
-      className="group flex h-full flex-col gap-4 rounded-[1.75rem] border border-ink/8 bg-white p-5 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-lift"
+      className="group flex h-full flex-col gap-4 rounded-[1.75rem] border border-ink/8 bg-white p-5 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-lift active:scale-[0.99]"
     >
       <div className="flex items-start justify-between gap-3">
         <CandidateAvatar candidate={candidate} size="md" />

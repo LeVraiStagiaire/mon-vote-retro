@@ -50,14 +50,14 @@ export function Hero() {
               onClick={() =>
                 document.getElementById("epoques")?.scrollIntoView({ behavior: "smooth", block: "start" })
               }
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-cream shadow-soft transition hover:bg-primary/90"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-cream shadow-soft transition hover:bg-primary/90 active:scale-[0.98]"
             >
               Choisir une époque
               <ArrowRight className="h-4 w-4" />
             </button>
             <Link
               to="/methode"
-              className="inline-flex h-12 items-center justify-center rounded-full border border-ink/10 bg-white px-6 text-sm font-semibold text-ink/70 transition hover:border-ink/20 hover:text-ink"
+              className="inline-flex h-12 items-center justify-center rounded-full border border-ink/10 bg-white px-6 text-sm font-semibold text-ink/70 transition hover:border-ink/20 hover:text-ink active:scale-[0.98]"
             >
               Comment ça marche ?
             </Link>
@@ -68,7 +68,7 @@ export function Hero() {
           </p>
         </div>
 
-        <div className="relative">
+        <div className="relative animate-reveal-up" style={{ animationDelay: "260ms" }}>
           <div className="rounded-[2rem] border border-ink/8 bg-white p-5 shadow-lift sm:p-7">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink/40">
@@ -80,13 +80,14 @@ export function Hero() {
             </div>
 
             <ul className="mt-5 space-y-2.5">
-              {SHOWCASE.map((item) => {
+              {SHOWCASE.map((item, index) => {
                 const candidate = CANDIDATE_MAP[item.id];
                 if (!candidate) return null;
                 return (
                   <li
                     key={item.id}
-                    className="flex items-center gap-3 rounded-2xl border border-ink/8 bg-cream/60 px-3 py-2.5"
+                    className="flex animate-reveal-up items-center gap-3 rounded-2xl border border-ink/8 bg-cream/60 px-3 py-2.5"
+                    style={{ animationDelay: `${400 + index * 70}ms` }}
                   >
                     <CandidateAvatar candidate={candidate} size="sm" />
                     <div className="min-w-0 flex-1">

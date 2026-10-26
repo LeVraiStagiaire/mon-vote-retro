@@ -12,7 +12,7 @@ const NotFound = () => {
 
   return (
     <PageShell width="narrow" className="py-16 sm:py-24">
-      <div className="rounded-[2rem] border border-ink/8 bg-white p-8 text-center shadow-lift sm:p-12">
+      <div className="animate-pop-in rounded-[2rem] border border-ink/8 bg-white p-8 text-center shadow-lift sm:p-12">
         <p className="font-display text-6xl text-primary/25">404</p>
         <h1 className="mt-3 text-3xl text-ink sm:text-4xl">Cette page n'existe pas</h1>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink/60">

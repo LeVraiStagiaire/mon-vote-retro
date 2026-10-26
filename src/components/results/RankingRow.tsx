@@ -9,9 +9,11 @@ import { cn } from "@/lib/utils";
 interface RankingRowProps {
   scored: ScoredCandidate;
   rank: number;
+  /** Position dans la liste, pour décaler l'entrée en cascade. */
+  index?: number;
 }
 
-export function RankingRow({ scored, rank }: RankingRowProps) {
+export function RankingRow({ scored, rank, index = 0 }: RankingRowProps) {
   const candidate = scored.candidate;
   const percent = scored.score == null ? 0 : Math.round(scored.score * 100);
   const top = rank === 1;
@@ -20,8 +22,9 @@ export function RankingRow({ scored, rank }: RankingRowProps) {
     <Link
       to={`/candidat/${candidate.id}`}
       data-testid={`ranking-row-${candidate.id}`}
+      style={{ animationDelay: `${Math.min(index * 35, 350)}ms` }}
       className={cn(
-        "group flex items-center gap-3 rounded-2xl border px-3 py-3 transition sm:gap-4 sm:px-4",
+        "group flex animate-fade-slide-in items-center gap-3 rounded-2xl border px-3 py-3 transition sm:gap-4 sm:px-4",
         top
           ? "border-primary/25 bg-lavender/40"
           : "border-transparent bg-white hover:border-ink/10 hover:bg-cream/60",

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
+import { Reveal } from "@/components/Reveal";
 import { CandidateCard } from "@/components/candidates/CandidateCard";
 import { CandidateFilters, type YearFilter } from "@/components/candidates/CandidateFilters";
 import { useQuiz } from "@/context/QuizContext";
@@ -94,12 +95,18 @@ const Candidates = () => {
         </div>
       ) : (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((candidate) => (
-            <CandidateCard
+          {filtered.map((candidate, index) => (
+            <Reveal
               key={candidate.id}
-              candidate={candidate}
-              scored={enough ? scoredMap[candidate.id] : null}
-            />
+              delay={Math.min(index * 40, 320)}
+              y={12}
+              className="h-full"
+            >
+              <CandidateCard
+                candidate={candidate}
+                scored={enough ? scoredMap[candidate.id] : null}
+              />
+            </Reveal>
           ))}
         </div>
       )}

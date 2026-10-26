@@ -38,12 +38,13 @@ export function LikertScale({ value, onSelect, disabled }: LikertScaleProps) {
               selected
                 ? "border-primary bg-primary text-cream shadow-soft"
                 : "border-ink/10 bg-white text-ink hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-soft",
+              "active:scale-[0.98]",
             )}
           >
             <span
               className={cn(
                 "grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-bold transition",
-                selected && "bg-cream/20 text-cream",
+                selected && "animate-ring-in bg-cream/20 text-cream",
               )}
               style={selected ? undefined : { backgroundColor: `${option.tone}26`, color: option.tone }}
             >

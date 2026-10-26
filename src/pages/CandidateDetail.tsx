@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
+import { Reveal } from "@/components/Reveal";
 import { CandidateAvatar } from "@/components/candidates/CandidateAvatar";
 import { AgreementHighlights } from "@/components/candidates/AgreementHighlights";
 import { PositionList } from "@/components/candidates/PositionList";
@@ -61,7 +62,8 @@ const CandidateDetail = () => {
         Tous les candidats
       </Link>
 
-      <header className="mt-4 grid gap-6 rounded-[2rem] border border-ink/8 bg-white p-6 shadow-lift sm:p-9 lg:grid-cols-[auto_1fr_auto] lg:items-center">
+      <Reveal y={12}>
+        <header className="mt-4 grid gap-6 rounded-[2rem] border border-ink/8 bg-white p-6 shadow-lift sm:p-9 lg:grid-cols-[auto_1fr_auto] lg:items-center">
         <CandidateAvatar candidate={candidate} size="xl" />
 
         <div className="min-w-0">
@@ -106,10 +108,11 @@ const CandidateDetail = () => {
             {percent != null ? `${scored?.compared} questions comparées` : `en ${candidate.year}`}
           </p>
         </div>
-      </header>
+        </header>
+      </Reveal>
 
       {!enough && (
-        <div className="mt-4 flex flex-col gap-3 rounded-[1.5rem] border border-ink/8 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4 animate-fade-slide-in flex flex-col gap-3 rounded-[1.5rem] border border-ink/8 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm leading-relaxed text-ink/60">
             Les positions ci-dessous sont celles de l'archétype et de ses ajustements. Répondez au
             questionnaire pour voir vos accords et désaccords question par question.
@@ -126,16 +129,20 @@ const CandidateDetail = () => {
 
       {enough && (
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <AgreementHighlights
-            title="Vos accords les plus forts"
-            direction="agree"
-            entries={topAgreements(candidate, answers, questions, { limit: 3, direction: "agree" })}
-          />
-          <AgreementHighlights
-            title="Vos désaccords les plus nets"
-            direction="disagree"
-            entries={topAgreements(candidate, answers, questions, { limit: 3, direction: "disagree" })}
-          />
+          <Reveal delay={60} className="h-full">
+            <AgreementHighlights
+              title="Vos accords les plus forts"
+              direction="agree"
+              entries={topAgreements(candidate, answers, questions, { limit: 3, direction: "agree" })}
+            />
+          </Reveal>
+          <Reveal delay={120} className="h-full">
+            <AgreementHighlights
+              title="Vos désaccords les plus nets"
+              direction="disagree"
+              entries={topAgreements(candidate, answers, questions, { limit: 3, direction: "disagree" })}
+            />
+          </Reveal>
         </div>
       )}
 
@@ -160,20 +167,22 @@ const CandidateDetail = () => {
         <PositionList candidate={candidate} answers={answers} hasAnswers={enough} />
       </div>
 
-      <section className="mt-6 rounded-[1.75rem] border border-ink/8 bg-white p-5 shadow-soft">
-        <h2 className="text-xl text-ink">Autres candidats de {candidate.year}</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {peers.map((peer) => (
-            <Link
-              key={peer.id}
-              to={`/candidat/${peer.id}`}
-              className="rounded-full border border-ink/10 px-3 py-1.5 text-xs font-medium text-ink/60 transition hover:border-primary/30 hover:text-primary"
-            >
-              {fullName(peer)}
-            </Link>
-          ))}
-        </div>
-      </section>
+      <Reveal>
+        <section className="mt-6 rounded-[1.75rem] border border-ink/8 bg-white p-5 shadow-soft">
+          <h2 className="text-xl text-ink">Autres candidats de {candidate.year}</h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {peers.map((peer) => (
+              <Link
+                key={peer.id}
+                to={`/candidat/${peer.id}`}
+                className="rounded-full border border-ink/10 px-3 py-1.5 text-xs font-medium text-ink/60 transition hover:border-primary/30 hover:text-primary"
+              >
+                {fullName(peer)}
+              </Link>
+            ))}
+          </div>
+        </section>
+      </Reveal>
     </PageShell>
   );
 };

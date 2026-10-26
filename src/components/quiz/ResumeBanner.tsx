@@ -12,7 +12,7 @@ export function ResumeBanner() {
   const remaining = Math.max(questions.length - answered, 0);
 
   return (
-    <div className="flex flex-col gap-4 rounded-[1.75rem] border border-agree/20 bg-agree-soft/70 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex animate-fade-slide-in flex-col gap-4 rounded-[1.75rem] border border-agree/20 bg-agree-soft/70 p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white text-agree shadow-soft">
           <RotateCcw className="h-4 w-4" />

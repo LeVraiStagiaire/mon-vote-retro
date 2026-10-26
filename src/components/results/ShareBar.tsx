@@ -40,7 +40,7 @@ export function ShareBar() {
         type="button"
         onClick={handleCopy}
         data-testid="copy-share-link"
-        className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-cream transition hover:bg-primary/90"
+        className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-cream transition hover:bg-primary/90 active:scale-[0.98]"
       >
         {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
         {copied ? "Lien copié" : "Copier le lien de partage"}
