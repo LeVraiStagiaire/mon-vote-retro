@@ -1,7 +1,8 @@
 import { Check } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
-import { ELECTIONS, type ElectionYear } from "@/data/elections";
 import { candidatesForYear } from "@/data/candidates";
+import { ERA_CONTEXTS } from "@/data/contexts";
+import { ELECTIONS, type ElectionYear } from "@/data/elections";
 import { cn } from "@/lib/utils";
 
 interface EraSelectorProps {
@@ -16,17 +17,18 @@ export function EraSelector({ selectedYear, onSelect }: EraSelectorProps) {
         <div>
           <h2 className="text-3xl text-ink sm:text-4xl">1. Choisissez une époque</h2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink/60">
-            Le contexte, les thèmes de campagne et les candidats changent d'une élection à l'autre. Votre
-            questionnaire portera sur l'année sélectionnée.
+            Chaque scrutin a son propre questionnaire de 100 questions, écrit avec les débats et le
+            vocabulaire de l'année. Choisissez une campagne, vous verrez ses enjeux et son contexte.
           </p>
         </div>
-        <span className="text-xs font-medium text-ink/40">5 scrutins disponibles</span>
+        <span className="text-xs font-medium text-ink/40">5 scrutins · 500 questions</span>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {ELECTIONS.map((election, index) => {
           const selected = selectedYear === election.year;
           const candidates = candidatesForYear(election.year);
+          const context = ERA_CONTEXTS[election.year];
           return (
             <Reveal key={election.year} delay={index * 60} className="h-full">
               <button
@@ -35,7 +37,7 @@ export function EraSelector({ selectedYear, onSelect }: EraSelectorProps) {
                 aria-pressed={selected}
                 data-testid={`era-${election.year}`}
                 className={cn(
-                  "group relative flex h-full flex-col justify-between gap-5 rounded-[1.75rem] border bg-white p-5 text-left transition-all duration-300 active:scale-[0.99]",
+                  "group relative flex h-full flex-col justify-between gap-4 rounded-[1.75rem] border bg-white p-5 text-left transition-all duration-300 active:scale-[0.99]",
                   selected
                     ? "border-primary/40 bg-lavender/40 shadow-lift ring-2 ring-primary"
                     : "border-ink/8 shadow-soft hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-lift",
@@ -56,6 +58,20 @@ export function EraSelector({ selectedYear, onSelect }: EraSelectorProps) {
                     </span>
                   </div>
                   <p className="mt-3 text-sm font-semibold leading-snug text-ink/80">{election.tagline}</p>
+
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {context.keyIssues.slice(0, 3).map((issue) => (
+                      <span
+                        key={issue}
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                          selected ? "bg-white text-primary" : "bg-cream text-ink/50",
+                        )}
+                      >
+                        {issue}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
@@ -66,6 +82,7 @@ export function EraSelector({ selectedYear, onSelect }: EraSelectorProps) {
                   <p className="text-xs text-ink/45">
                     {candidates.length} candidats · {election.date}
                   </p>
+                  <p className="text-[11px] font-semibold text-primary/70">100 questions propres</p>
                 </div>
               </button>
             </Reveal>

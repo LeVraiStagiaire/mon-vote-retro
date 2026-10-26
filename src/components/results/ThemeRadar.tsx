@@ -22,7 +22,7 @@ interface ThemeRadarProps {
 
 export function ThemeRadar({ candidate, answers, year, mode }: ThemeRadarProps) {
   const data = useMemo(() => {
-    const questions = questionSet(mode);
+    const questions = questionSet(year, mode);
     const primary = themeScores(candidate, answers, questions);
     const others = candidatesOfYear(year).filter((item) => item.id !== candidate.id);
     const averages = others.map((item) => themeScores(item, answers, questions));

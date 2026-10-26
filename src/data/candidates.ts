@@ -1,6 +1,7 @@
+import { ARCHETYPE_EXCEPTIONS } from "./archetypeExceptions";
 import { ARCHETYPE_MAP, type ArchetypeId } from "./archetypes";
 import { ELECTION_MAP, isElectionYear, type ElectionYear } from "./elections";
-import { QUESTION_MAP, QUESTIONS } from "./questions";
+import { QUESTION_MAP, QUESTIONS, questionsForYear } from "./questions";
 
 export interface Candidate {
   id: string;
@@ -10,7 +11,7 @@ export interface Candidate {
   party: string;
   partyShort: string;
   archetype: ArchetypeId;
-  /** Ajustements personnels par identifiant de question. */
+  /** Ajustements personnels par identifiant de question de son année. */
   overrides: Record<string, number | null>;
   /** Score officiel au 1er tour, en pourcentage. */
   score: number;
@@ -30,7 +31,7 @@ const C: Candidate[] = [
     party: "Union pour la majorité présidentielle",
     partyShort: "UMP",
     archetype: "droite-gaulliste",
-    overrides: { "europe-1": -2, "europe-2": 2, "securite-1": 2, "international-4": 2 },
+    overrides: { "2002-economie-3": 2, "2002-securite-4": 2, "2002-international-2": 2 },
     score: 19.88,
     runoff: true,
     wikiTitle: "Jacques Chirac",
@@ -45,7 +46,7 @@ const C: Candidate[] = [
     party: "Front national",
     partyShort: "FN",
     archetype: "droite-nationale",
-    overrides: { "europe-1": 2, "international-1": 2, "social-3": 2 },
+    overrides: { "2002-immigration-4": 2, "2002-europe-1": -2, "2002-international-1": -2 },
     score: 16.86,
     runoff: true,
     wikiTitle: "Jean-Marie Le Pen",
@@ -60,7 +61,7 @@ const C: Candidate[] = [
     party: "Parti socialiste",
     partyShort: "PS",
     archetype: "social-democratie",
-    overrides: { "europe-2": 2, "immigration-3": 2, "economie-1": -2 },
+    overrides: { "2002-economie-4": 2, "2002-education-2": -1, "2002-immigration-2": 2 },
     score: 16.18,
     runoff: false,
     wikiTitle: "Lionel Jospin",
@@ -75,7 +76,7 @@ const C: Candidate[] = [
     party: "Union pour la démocratie française",
     partyShort: "UDF",
     archetype: "centre-social-liberal",
-    overrides: { "europe-2": 2, "economie-7": 2, "societe-4": -2 },
+    overrides: { "2002-europe-1": 2, "2002-economie-2": 1, "2002-education-1": 1 },
     score: 6.84,
     runoff: false,
     wikiTitle: "François Bayrou",
@@ -90,7 +91,7 @@ const C: Candidate[] = [
     party: "Lutte ouvrière",
     partyShort: "LO",
     archetype: "extreme-gauche",
-    overrides: { "europe-1": 2, "travail-5": 2, "international-1": 2 },
+    overrides: { "2002-travail-2": 2, "2002-economie-8": 2, "2002-europe-1": -2 },
     score: 5.72,
     runoff: false,
     wikiTitle: "Arlette Laguiller",
@@ -105,7 +106,12 @@ const C: Candidate[] = [
     party: "Mouvement des citoyens",
     partyShort: "MDC",
     archetype: "souverainisme",
-    overrides: { "europe-1": 2, "europe-2": -1, "international-1": 2, "immigration-2": 1 },
+    overrides: {
+      "2002-europe-1": -2,
+      "2002-europe-2": -2,
+      "2002-international-8": 2,
+      "2002-immigration-9": 1,
+    },
     score: 5.33,
     runoff: false,
     wikiTitle: "Jean-Pierre Chevènement",
@@ -120,7 +126,7 @@ const C: Candidate[] = [
     party: "Les Verts",
     partyShort: "Verts",
     archetype: "ecologie-politique",
-    overrides: { "ecologie-1": 2, "europe-2": 2, "securite-3": 2 },
+    overrides: { "2002-ecologie-1": 2, "2002-societe-1": 2, "2002-societe-2": 2 },
     score: 5.25,
     runoff: false,
     wikiTitle: "Noël Mamère",
@@ -135,7 +141,7 @@ const C: Candidate[] = [
     party: "Rassemblement pour la France",
     partyShort: "RPF",
     archetype: "souverainisme",
-    overrides: { "europe-1": 2, "securite-1": 2, "international-4": 2 },
+    overrides: { "2002-europe-1": -2, "2002-securite-2": 2, "2002-europe-2": -2 },
     score: 4.37,
     runoff: false,
     wikiTitle: "Charles Pasqua",
@@ -150,7 +156,7 @@ const C: Candidate[] = [
     party: "Ligue communiste révolutionnaire",
     partyShort: "LCR",
     archetype: "extreme-gauche",
-    overrides: { "travail-3": 2, "europe-1": 1, "societe-1": 2 },
+    overrides: { "2002-travail-3": -2, "2002-economie-5": 2, "2002-europe-1": -2 },
     score: 4.25,
     runoff: false,
     wikiTitle: "Olivier Besancenot",
@@ -165,7 +171,7 @@ const C: Candidate[] = [
     party: "Chasse, pêche, nature et traditions",
     partyShort: "CPNT",
     archetype: "ruralite-chasse",
-    overrides: { "ecologie-5": 2, "ecologie-2": 2, "europe-3": 2 },
+    overrides: { "2002-ecologie-3": 2, "2002-ecologie-7": -2, "2002-europe-1": -2 },
     score: 4.23,
     runoff: false,
     wikiTitle: "Jean Saint-Josse",
@@ -180,7 +186,7 @@ const C: Candidate[] = [
     party: "Démocratie libérale",
     partyShort: "DL",
     archetype: "droite-liberale",
-    overrides: { "economie-3": 2, "travail-8": 2, "social-2": 2 },
+    overrides: { "2002-economie-1": 2, "2002-economie-3": 2, "2002-travail-1": 2 },
     score: 3.91,
     runoff: false,
     wikiTitle: "Alain Madelin",
@@ -195,7 +201,7 @@ const C: Candidate[] = [
     party: "Parti communiste français",
     partyShort: "PCF",
     archetype: "gauche-radicale",
-    overrides: { "economie-8": 1, "travail-5": 2, "international-1": 1 },
+    overrides: { "2002-economie-3": -2, "2002-travail-2": 2, "2002-international-1": -1 },
     score: 3.37,
     runoff: false,
     wikiTitle: "Robert Hue",
@@ -210,7 +216,7 @@ const C: Candidate[] = [
     party: "Mouvement national républicain",
     partyShort: "MNR",
     archetype: "droite-nationale",
-    overrides: { "immigration-6": 2, "europe-1": 2, "societe-4": 2 },
+    overrides: { "2002-immigration-4": 2, "2002-immigration-6": 2, "2002-europe-1": -2 },
     score: 2.34,
     runoff: false,
     wikiTitle: "Bruno Mégret",
@@ -225,7 +231,7 @@ const C: Candidate[] = [
     party: "Cap21",
     partyShort: "Cap21",
     archetype: "ecologie-politique",
-    overrides: { "ecologie-3": 2, "europe-2": 2, "societe-5": 2 },
+    overrides: { "2002-ecologie-1": 1, "2002-ecologie-4": 2, "2002-europe-1": 2 },
     score: 1.88,
     runoff: false,
     wikiTitle: "Corinne Lepage",
@@ -240,7 +246,7 @@ const C: Candidate[] = [
     party: "Forum des républicains sociaux",
     partyShort: "FRS",
     archetype: "droite-conservatrice",
-    overrides: { "societe-2": -2, "societe-5": -2, "societe-4": 2 },
+    overrides: { "2002-societe-1": -2, "2002-societe-5": 2, "2002-societe-8": -2 },
     score: 1.19,
     runoff: false,
     wikiTitle: "Christine Boutin",
@@ -255,7 +261,7 @@ const C: Candidate[] = [
     party: "Parti des travailleurs",
     partyShort: "PT",
     archetype: "extreme-gauche",
-    overrides: { "economie-8": 2, "travail-3": 2, "europe-1": 2 },
+    overrides: { "2002-economie-3": -2, "2002-travail-2": 2, "2002-europe-1": -2 },
     score: 0.47,
     runoff: false,
     wikiTitle: "Daniel Gluckstein",
@@ -272,7 +278,7 @@ const C: Candidate[] = [
     party: "Union pour un mouvement populaire",
     partyShort: "UMP",
     archetype: "droite-liberale",
-    overrides: { "economie-1": 2, "travail-8": 2, "immigration-9": 1, "securite-1": 2 },
+    overrides: { "2007-economie-1": 2, "2007-immigration-1": 2, "2007-securite-1": 2 },
     score: 31.18,
     runoff: true,
     wikiTitle: "Nicolas Sarkozy",
@@ -287,7 +293,7 @@ const C: Candidate[] = [
     party: "Parti socialiste",
     partyShort: "PS",
     archetype: "social-democratie",
-    overrides: { "education-6": 2, "social-1": 2, "immigration-3": 2 },
+    overrides: { "2007-education-4": 2, "2007-social-1": 2, "2007-education-1": 1 },
     score: 25.87,
     runoff: true,
     wikiTitle: "Ségolène Royal",
@@ -302,7 +308,7 @@ const C: Candidate[] = [
     party: "Union pour la démocratie française",
     partyShort: "UDF",
     archetype: "centre-social-liberal",
-    overrides: { "europe-2": 2, "economie-7": 2, "education-2": -1 },
+    overrides: { "2007-europe-2": 1, "2007-economie-6": 2, "2007-education-1": 1 },
     score: 18.57,
     runoff: false,
     wikiTitle: "François Bayrou",
@@ -317,7 +323,7 @@ const C: Candidate[] = [
     party: "Front national",
     partyShort: "FN",
     archetype: "droite-nationale",
-    overrides: { "europe-1": 2, "immigration-6": 2, "international-1": 2 },
+    overrides: { "2007-immigration-1": 2, "2007-europe-1": -2, "2007-international-1": -2 },
     score: 10.44,
     runoff: false,
     wikiTitle: "Jean-Marie Le Pen",
@@ -332,7 +338,7 @@ const C: Candidate[] = [
     party: "Ligue communiste révolutionnaire",
     partyShort: "LCR",
     archetype: "extreme-gauche",
-    overrides: { "travail-3": 2, "social-5": 2, "ecologie-1": 1 },
+    overrides: { "2007-travail-3": 2, "2007-economie-4": -2, "2007-europe-1": -2 },
     score: 4.08,
     runoff: false,
     wikiTitle: "Olivier Besancenot",
@@ -347,7 +353,7 @@ const C: Candidate[] = [
     party: "Mouvement pour la France",
     partyShort: "MPF",
     archetype: "souverainisme",
-    overrides: { "europe-1": 2, "societe-4": 2, "immigration-2": 2 },
+    overrides: { "2007-europe-1": -2, "2007-immigration-1": 2, "2007-societe-8": 2 },
     score: 2.23,
     runoff: false,
     wikiTitle: "Philippe de Villiers",
@@ -362,7 +368,7 @@ const C: Candidate[] = [
     party: "Parti communiste français",
     partyShort: "PCF",
     archetype: "gauche-radicale",
-    overrides: { "economie-8": 2, "social-1": 2, "travail-5": 2 },
+    overrides: { "2007-economie-4": -2, "2007-travail-9": 2, "2007-social-2": 2 },
     score: 1.93,
     runoff: false,
     wikiTitle: "Marie-George Buffet",
@@ -377,7 +383,7 @@ const C: Candidate[] = [
     party: "Les Verts",
     partyShort: "Verts",
     archetype: "ecologie-politique",
-    overrides: { "ecologie-1": 2, "ecologie-3": 2, "europe-2": 2 },
+    overrides: { "2007-ecologie-1": 2, "2007-ecologie-3": 2, "2007-social-2": 2 },
     score: 1.57,
     runoff: false,
     wikiTitle: "Dominique Voynet",
@@ -392,7 +398,7 @@ const C: Candidate[] = [
     party: "Lutte ouvrière",
     partyShort: "LO",
     archetype: "extreme-gauche",
-    overrides: { "travail-5": 2, "europe-1": 2 },
+    overrides: { "2007-travail-3": 2, "2007-economie-4": -2 },
     score: 1.33,
     runoff: false,
     wikiTitle: "Arlette Laguiller",
@@ -407,7 +413,7 @@ const C: Candidate[] = [
     party: "Collectif altermondialiste",
     partyShort: "Alter",
     archetype: "altermondialisme",
-    overrides: { "ecologie-9": 2, "immigration-1": 2, "international-5": 2 },
+    overrides: { "2007-ecologie-5": 2, "2007-ecologie-8": -2, "2007-international-7": 2 },
     score: 1.32,
     runoff: false,
     wikiTitle: "José Bové",
@@ -422,7 +428,7 @@ const C: Candidate[] = [
     party: "Chasse, pêche, nature et traditions",
     partyShort: "CPNT",
     archetype: "ruralite-chasse",
-    overrides: { "ecologie-5": 2, "ecologie-2": 2, "europe-3": 2 },
+    overrides: { "2007-ecologie-10": 2, "2007-ecologie-8": -2, "2007-europe-1": -1 },
     score: 1.15,
     runoff: false,
     wikiTitle: "Frédéric Nihous",
@@ -437,7 +443,7 @@ const C: Candidate[] = [
     party: "Parti des travailleurs",
     partyShort: "PT",
     archetype: "extreme-gauche",
-    overrides: { "travail-3": 2, "europe-1": 2, "economie-9": 1 },
+    overrides: { "2007-travail-3": 2, "2007-europe-1": -2, "2007-economie-4": -2 },
     score: 0.34,
     runoff: false,
     wikiTitle: "Gérard Schivardi",
@@ -454,7 +460,7 @@ const C: Candidate[] = [
     party: "Parti socialiste",
     partyShort: "PS",
     archetype: "social-democratie",
-    overrides: { "economie-1": -2, "education-6": 2, "societe-1": 2 },
+    overrides: { "2012-economie-2": 2, "2012-societe-1": 2, "2012-economie-1": 1 },
     score: 28.63,
     runoff: true,
     wikiTitle: "François Hollande",
@@ -469,7 +475,7 @@ const C: Candidate[] = [
     party: "Union pour un mouvement populaire",
     partyShort: "UMP",
     archetype: "droite-gaulliste",
-    overrides: { "immigration-9": 1, "securite-1": 2, "europe-7": -1 },
+    overrides: { "2012-economie-3": 1, "2012-immigration-2": 2, "2012-europe-1": -1 },
     score: 27.18,
     runoff: true,
     wikiTitle: "Nicolas Sarkozy",
@@ -484,7 +490,7 @@ const C: Candidate[] = [
     party: "Front national",
     partyShort: "FN",
     archetype: "droite-nationale",
-    overrides: { "europe-1": 2, "immigration-6": 2, "social-3": 2 },
+    overrides: { "2012-europe-4": 2, "2012-immigration-1": -2, "2012-immigration-2": 2 },
     score: 17.9,
     runoff: false,
     wikiTitle: "Marine Le Pen",
@@ -499,7 +505,7 @@ const C: Candidate[] = [
     party: "Front de gauche",
     partyShort: "FG",
     archetype: "gauche-radicale",
-    overrides: { "europe-1": 2, "ecologie-1": 1, "international-1": 2, "economie-8": 2 },
+    overrides: { "2012-europe-1": 2, "2012-international-1": 2, "2012-economie-2": 2 },
     score: 11.1,
     runoff: false,
     wikiTitle: "Jean-Luc Mélenchon",
@@ -514,7 +520,7 @@ const C: Candidate[] = [
     party: "Mouvement démocrate",
     partyShort: "MoDem",
     archetype: "centre-social-liberal",
-    overrides: { "economie-7": 2, "europe-2": 2, "education-2": 1 },
+    overrides: { "2012-economie-5": 2, "2012-europe-2": 2, "2012-societe-1": 1 },
     score: 9.13,
     runoff: false,
     wikiTitle: "François Bayrou",
@@ -529,7 +535,7 @@ const C: Candidate[] = [
     party: "Europe Écologie Les Verts",
     partyShort: "EELV",
     archetype: "ecologie-politique",
-    overrides: { "ecologie-1": 2, "ecologie-3": 2, "societe-1": 2 },
+    overrides: { "2012-ecologie-1": 2, "2012-societe-1": 2, "2012-ecologie-2": 2 },
     score: 2.31,
     runoff: false,
     wikiTitle: "Eva Joly",
@@ -544,7 +550,7 @@ const C: Candidate[] = [
     party: "Debout la République",
     partyShort: "DLR",
     archetype: "souverainisme",
-    overrides: { "europe-1": 2, "europe-3": 2, "immigration-2": 1 },
+    overrides: { "2012-europe-4": 2, "2012-europe-1": 2, "2012-immigration-4": 1 },
     score: 1.79,
     runoff: false,
     wikiTitle: "Nicolas Dupont-Aignan",
@@ -559,7 +565,7 @@ const C: Candidate[] = [
     party: "Nouveau Parti anticapitaliste",
     partyShort: "NPA",
     archetype: "extreme-gauche",
-    overrides: { "economie-8": 2, "travail-3": 2, "international-1": 2 },
+    overrides: { "2012-economie-2": 2, "2012-travail-1": 2, "2012-international-1": 2 },
     score: 1.15,
     runoff: false,
     wikiTitle: "Philippe Poutou",
@@ -574,7 +580,7 @@ const C: Candidate[] = [
     party: "Lutte ouvrière",
     partyShort: "LO",
     archetype: "extreme-gauche",
-    overrides: { "travail-5": 2, "europe-1": 2, "social-1": 2 },
+    overrides: { "2012-travail-1": 2, "2012-europe-4": 2, "2012-social-1": 2 },
     score: 0.56,
     runoff: false,
     wikiTitle: "Nathalie Arthaud",
@@ -589,7 +595,7 @@ const C: Candidate[] = [
     party: "Solidarité et progrès",
     partyShort: "S&P",
     archetype: "divers",
-    overrides: { "europe-1": 2, "europe-7": -2, "international-2": 2, "economie-8": 2 },
+    overrides: { "2012-europe-4": 2, "2012-international-1": 2, "2012-economie-7": 2 },
     score: 0.25,
     runoff: false,
     wikiTitle: "Jacques Cheminade",
@@ -606,7 +612,7 @@ const C: Candidate[] = [
     party: "La République en marche",
     partyShort: "LREM",
     archetype: "centre-social-liberal",
-    overrides: { "europe-2": 2, "economie-3": 1, "travail-8": 1, "europe-8": 2 },
+    overrides: { "2017-economie-1": 2, "2017-europe-2": 2, "2017-travail-3": 1 },
     score: 24.01,
     runoff: true,
     wikiTitle: "Emmanuel Macron",
@@ -621,7 +627,7 @@ const C: Candidate[] = [
     party: "Front national",
     partyShort: "FN",
     archetype: "droite-nationale",
-    overrides: { "europe-1": 2, "immigration-6": 2, "international-1": 2 },
+    overrides: { "2017-europe-1": 2, "2017-europe-4": 2, "2017-immigration-1": 2 },
     score: 21.3,
     runoff: true,
     wikiTitle: "Marine Le Pen",
@@ -636,7 +642,7 @@ const C: Candidate[] = [
     party: "Les Républicains",
     partyShort: "LR",
     archetype: "droite-conservatrice",
-    overrides: { "economie-3": 2, "social-2": 1, "societe-4": 2, "travail-8": 2 },
+    overrides: { "2017-economie-4": 2, "2017-travail-4": 2, "2017-societe-1": 2 },
     score: 20.01,
     runoff: false,
     wikiTitle: "François Fillon",
@@ -651,7 +657,7 @@ const C: Candidate[] = [
     party: "La France insoumise",
     partyShort: "LFI",
     archetype: "gauche-radicale",
-    overrides: { "europe-1": 2, "international-1": 2, "ecologie-1": 1, "societe-3": 2 },
+    overrides: { "2017-europe-4": 2, "2017-international-1": 2, "2017-travail-1": 2 },
     score: 19.58,
     runoff: false,
     wikiTitle: "Jean-Luc Mélenchon",
@@ -666,7 +672,7 @@ const C: Candidate[] = [
     party: "Parti socialiste",
     partyShort: "PS",
     archetype: "social-democratie",
-    overrides: { "social-5": 2, "ecologie-3": 1, "societe-1": 2 },
+    overrides: { "2017-social-1": 2, "2017-ecologie-3": 1, "2017-societe-2": 2 },
     score: 6.36,
     runoff: false,
     wikiTitle: "Benoît Hamon",
@@ -681,7 +687,7 @@ const C: Candidate[] = [
     party: "Debout la France",
     partyShort: "DLF",
     archetype: "souverainisme",
-    overrides: { "europe-1": 2, "immigration-9": 1, "europe-3": 2 },
+    overrides: { "2017-europe-1": 2, "2017-europe-4": 2, "2017-immigration-1": 2 },
     score: 4.7,
     runoff: false,
     wikiTitle: "Nicolas Dupont-Aignan",
@@ -696,7 +702,7 @@ const C: Candidate[] = [
     party: "Résistons !",
     partyShort: "Résistons",
     archetype: "ruralite-chasse",
-    overrides: { "ecologie-5": 2, "europe-1": 1, "education-8": 2 },
+    overrides: { "2017-ecologie-6": 2, "2017-europe-4": 2, "2017-economie-5": -1 },
     score: 1.21,
     runoff: false,
     wikiTitle: "Jean Lassalle",
@@ -711,7 +717,7 @@ const C: Candidate[] = [
     party: "Nouveau Parti anticapitaliste",
     partyShort: "NPA",
     archetype: "extreme-gauche",
-    overrides: { "economie-8": 2, "travail-3": 2, "immigration-1": 2 },
+    overrides: { "2017-travail-1": 2, "2017-international-1": 2, "2017-economie-6": 2 },
     score: 1.09,
     runoff: false,
     wikiTitle: "Philippe Poutou",
@@ -726,7 +732,7 @@ const C: Candidate[] = [
     party: "Union populaire républicaine",
     partyShort: "UPR",
     archetype: "souverainisme",
-    overrides: { "europe-1": 2, "europe-5": 2, "international-1": 2, "economie-10": 1 },
+    overrides: { "2017-europe-1": 2, "2017-europe-4": 2, "2017-international-1": 2 },
     score: 0.92,
     runoff: false,
     wikiTitle: "François Asselineau",
@@ -741,7 +747,7 @@ const C: Candidate[] = [
     party: "Lutte ouvrière",
     partyShort: "LO",
     archetype: "extreme-gauche",
-    overrides: { "travail-5": 2, "social-1": 2, "europe-1": 2 },
+    overrides: { "2017-travail-1": 2, "2017-europe-1": 2, "2017-social-1": -1 },
     score: 0.64,
     runoff: false,
     wikiTitle: "Nathalie Arthaud",
@@ -756,7 +762,7 @@ const C: Candidate[] = [
     party: "Solidarité et progrès",
     partyShort: "S&P",
     archetype: "divers",
-    overrides: { "europe-1": 2, "international-2": 2, "economie-8": 2 },
+    overrides: { "2017-europe-1": 2, "2017-economie-8": 2, "2017-international-7": 2 },
     score: 0.18,
     runoff: false,
     wikiTitle: "Jacques Cheminade",
@@ -773,7 +779,7 @@ const C: Candidate[] = [
     party: "La République en marche",
     partyShort: "LREM",
     archetype: "centre-social-liberal",
-    overrides: { "europe-2": 2, "travail-8": 1, "economie-7": 2, "societe-5": 1 },
+    overrides: { "2022-ecologie-1": 2, "2022-travail-1": 2, "2022-europe-1": 2 },
     score: 27.85,
     runoff: true,
     wikiTitle: "Emmanuel Macron",
@@ -788,7 +794,7 @@ const C: Candidate[] = [
     party: "Rassemblement national",
     partyShort: "RN",
     archetype: "droite-nationale",
-    overrides: { "europe-1": 2, "immigration-6": 2, "social-3": 2, "international-4": 2 },
+    overrides: { "2022-immigration-1": 2, "2022-ecologie-2": 2, "2022-europe-2": 0 },
     score: 23.15,
     runoff: true,
     wikiTitle: "Marine Le Pen",
@@ -803,7 +809,7 @@ const C: Candidate[] = [
     party: "La France insoumise",
     partyShort: "LFI",
     archetype: "gauche-radicale",
-    overrides: { "europe-1": 1, "international-1": 2, "ecologie-1": 1, "societe-3": 2 },
+    overrides: { "2022-travail-2": 2, "2022-international-2": 2, "2022-ecologie-1": 0 },
     score: 21.95,
     runoff: false,
     wikiTitle: "Jean-Luc Mélenchon",
@@ -818,7 +824,7 @@ const C: Candidate[] = [
     party: "Reconquête",
     partyShort: "Reconquête",
     archetype: "droite-nationale",
-    overrides: { "immigration-9": 2, "societe-4": 2, "immigration-6": 2, "europe-1": 2 },
+    overrides: { "2022-immigration-1": 2, "2022-immigration-8": 2, "2022-societe-4": 2 },
     score: 7.07,
     runoff: false,
     wikiTitle: "Éric Zemmour",
@@ -833,7 +839,7 @@ const C: Candidate[] = [
     party: "Les Républicains",
     partyShort: "LR",
     archetype: "droite-conservatrice",
-    overrides: { "economie-3": 2, "immigration-9": 1, "societe-4": 1, "securite-1": 2 },
+    overrides: { "2022-economie-5": 2, "2022-immigration-1": 1, "2022-securite-1": 2 },
     score: 4.78,
     runoff: false,
     wikiTitle: "Valérie Pécresse",
@@ -848,7 +854,7 @@ const C: Candidate[] = [
     party: "Europe Écologie Les Verts",
     partyShort: "EELV",
     archetype: "ecologie-politique",
-    overrides: { "ecologie-1": 2, "ecologie-3": 2, "europe-2": 2, "immigration-1": 2 },
+    overrides: { "2022-ecologie-3": 2, "2022-ecologie-5": 2, "2022-societe-2": 2 },
     score: 4.63,
     runoff: false,
     wikiTitle: "Yannick Jadot",
@@ -863,7 +869,7 @@ const C: Candidate[] = [
     party: "Résistons !",
     partyShort: "Résistons",
     archetype: "ruralite-chasse",
-    overrides: { "ecologie-2": 2, "ecologie-8": 2, "europe-3": 2 },
+    overrides: { "2022-ecologie-2": 2, "2022-ecologie-8": 2, "2022-europe-10": 2 },
     score: 3.13,
     runoff: false,
     wikiTitle: "Jean Lassalle",
@@ -878,7 +884,7 @@ const C: Candidate[] = [
     party: "Parti communiste français",
     partyShort: "PCF",
     archetype: "gauche-radicale",
-    overrides: { "ecologie-1": -2, "travail-5": 2, "social-1": 2, "immigration-1": 0 },
+    overrides: { "2022-ecologie-1": 2, "2022-travail-2": 2, "2022-immigration-1": 0 },
     score: 2.28,
     runoff: false,
     wikiTitle: "Fabien Roussel",
@@ -893,7 +899,7 @@ const C: Candidate[] = [
     party: "Debout la France",
     partyShort: "DLF",
     archetype: "souverainisme",
-    overrides: { "europe-1": 2, "immigration-9": 1, "europe-3": 2 },
+    overrides: { "2022-europe-2": 2, "2022-europe-5": -1, "2022-immigration-1": 1 },
     score: 2.06,
     runoff: false,
     wikiTitle: "Nicolas Dupont-Aignan",
@@ -908,7 +914,7 @@ const C: Candidate[] = [
     party: "Parti socialiste",
     partyShort: "PS",
     archetype: "social-democratie",
-    overrides: { "ecologie-6": 2, "education-6": 2, "immigration-3": 2 },
+    overrides: { "2022-education-1": 2, "2022-ecologie-5": 2, "2022-societe-2": 2 },
     score: 1.75,
     runoff: false,
     wikiTitle: "Anne Hidalgo",
@@ -923,7 +929,7 @@ const C: Candidate[] = [
     party: "Nouveau Parti anticapitaliste",
     partyShort: "NPA",
     archetype: "extreme-gauche",
-    overrides: { "economie-8": 2, "travail-3": 2, "international-1": 2 },
+    overrides: { "2022-travail-2": 2, "2022-international-2": 2, "2022-economie-10": 2 },
     score: 0.77,
     runoff: false,
     wikiTitle: "Philippe Poutou",
@@ -938,7 +944,7 @@ const C: Candidate[] = [
     party: "Lutte ouvrière",
     partyShort: "LO",
     archetype: "extreme-gauche",
-    overrides: { "travail-5": 2, "europe-1": 2, "social-1": 2 },
+    overrides: { "2022-travail-2": 2, "2022-europe-2": 2, "2022-economie-8": 2 },
     score: 0.56,
     runoff: false,
     wikiTitle: "Nathalie Arthaud",
@@ -963,8 +969,14 @@ function validate(candidates: Candidate[]): Candidate[] {
       throw new Error(`Archétype inconnu pour ${candidate.id} : ${candidate.archetype}`);
     }
     for (const questionId of Object.keys(candidate.overrides)) {
-      if (!QUESTION_MAP[questionId]) {
+      const question = QUESTION_MAP[questionId];
+      if (!question) {
         throw new Error(`Question inconnue dans les ajustements de ${candidate.id} : ${questionId}`);
+      }
+      if (question.year !== candidate.year) {
+        throw new Error(
+          `Ajustement hors scrutin pour ${candidate.id} : ${questionId} appartient à ${question.year}.`,
+        );
       }
     }
   }
@@ -975,6 +987,17 @@ function validate(candidates: Candidate[]): Candidate[] {
       throw new Error(
         `${election.year} : ${actual} candidats déclarés pour ${election.candidateCount} attendus.`,
       );
+    }
+  }
+
+  for (const [questionId, exceptions] of Object.entries(ARCHETYPE_EXCEPTIONS)) {
+    if (!QUESTION_MAP[questionId]) {
+      throw new Error(`Exception sur une question inconnue : ${questionId}`);
+    }
+    for (const archetypeId of Object.keys(exceptions)) {
+      if (!ARCHETYPE_MAP[archetypeId as ArchetypeId]) {
+        throw new Error(`Exception sur un archétype inconnu : ${archetypeId}`);
+      }
     }
   }
 
@@ -1003,22 +1026,43 @@ export function candidatesForYear(year: ElectionYear): Candidate[] {
   return CANDIDATES.filter((candidate) => candidate.year === year);
 }
 
-const POSITIONS: Record<string, (number | null)[]> = CANDIDATES.reduce(
-  (acc, candidate) => {
-    const base = ARCHETYPE_MAP[candidate.archetype].positions;
-    const positions = base.slice();
-    QUESTIONS.forEach((question, index) => {
-      if (Object.prototype.hasOwnProperty.call(candidate.overrides, question.id)) {
-        positions[index] = candidate.overrides[question.id];
-      }
-    });
-    acc[candidate.id] = positions;
-    return acc;
-  },
-  {} as Record<string, (number | null)[]>,
-);
+/**
+ * Position d'un candidat sur une question de son scrutin :
+ * ajustement personnel > exception d'archétype > axe × polarité.
+ */
+function resolvePosition(candidate: Candidate, questionId: string): number | null {
+  if (Object.prototype.hasOwnProperty.call(candidate.overrides, questionId)) {
+    return candidate.overrides[questionId];
+  }
 
-/** Positions effectives du candidat, indexées comme QUESTIONS. */
-export function positionsOf(candidate: Candidate): (number | null)[] {
-  return POSITIONS[candidate.id];
+  const exception = ARCHETYPE_EXCEPTIONS[questionId];
+  if (exception && Object.prototype.hasOwnProperty.call(exception, candidate.archetype)) {
+    return exception[candidate.archetype] ?? null;
+  }
+
+  const question = QUESTION_MAP[questionId];
+  if (question.open) return null;
+
+  const base = ARCHETYPE_MAP[candidate.archetype].axes[question.axis];
+  return Math.max(-2, Math.min(2, base * question.polarity));
+}
+
+const POSITIONS_BY_ID: Record<string, Record<string, number | null>> = {};
+
+/** Positions effectives du candidat, indexées par identifiant de question de son année. */
+export function positionsById(candidate: Candidate): Record<string, number | null> {
+  let positions = POSITIONS_BY_ID[candidate.id];
+  if (!positions) {
+    positions = {};
+    for (const question of questionsForYear(candidate.year)) {
+      positions[question.id] = resolvePosition(candidate, question.id);
+    }
+    POSITIONS_BY_ID[candidate.id] = positions;
+  }
+  return positions;
+}
+
+/** Les 500 questions servent de garde-fou au build. */
+if (QUESTIONS.length === 0) {
+  throw new Error("Aucune question chargée.");
 }

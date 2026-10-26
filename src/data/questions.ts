@@ -1,157 +1,70 @@
 import { shuffleWithSeed } from "@/lib/shuffle";
-import { THEME_IDS, type ThemeId } from "./themes";
+import { AXIS_MAP } from "./axes";
+import { YEARS, type ElectionYear } from "./elections";
+import { THEME_IDS } from "./themes";
+import { RAW_2002 } from "./questions/2002";
+import { RAW_2007 } from "./questions/2007";
+import { RAW_2012 } from "./questions/2012";
+import { RAW_2017 } from "./questions/2017";
+import { RAW_2022 } from "./questions/2022";
+import type { Question, QuizMode, RawYear } from "./questions/types";
 
-export interface Question {
-  id: string;
-  themeId: ThemeId;
-  text: string;
-  express: boolean;
-}
+export type { Question, QuizMode } from "./questions/types";
 
-export type QuizMode = "express" | "complet";
-
-interface RawQuestion {
-  text: string;
-  express?: boolean;
-}
-
-/**
- * 100 questions, 10 par thème. Les questions `express` (2 par thème) forment
- * le questionnaire court de 20 questions : aucune donnée n'est dupliquée.
- */
-const RAW: Record<ThemeId, RawQuestion[]> = {
-  economie: [
-    { text: "L'impôt sur les grandes fortunes devrait être fortement réduit, voire supprimé.", express: true },
-    { text: "L'État doit rester actionnaire majoritaire des entreprises stratégiques." },
-    { text: "La France doit réduire le nombre de ses fonctionnaires." },
-    { text: "Les 35 heures ont été une bonne réforme pour l'emploi." },
-    { text: "Il faut laisser davantage de place au secteur privé dans les services publics." },
-    { text: "Le SMIC devrait être nettement augmenté pour soutenir la consommation.", express: true },
-    { text: "La dette publique doit être réduite en priorité, même au prix de coupes dans les dépenses." },
-    { text: "Les nationalisations sont parfois nécessaires pour protéger l'intérêt général." },
-    { text: "La finance devrait être beaucoup plus encadrée par la loi." },
-    { text: "Le droit du travail doit être simplifié pour faciliter l'embauche." },
-  ],
-  travail: [
-    { text: "Le CDI doit rester la norme par défaut dans tous les contrats de travail.", express: true },
-    { text: "Les licenciements devraient être facilités pour les entreprises en difficulté." },
-    { text: "Il faut passer à 32 heures pour partager le travail disponible." },
-    { text: "Les syndicats ont trop de pouvoir dans les négociations sociales." },
-    { text: "La retraite à 60 ans doit être rétablie pour tous." },
-    { text: "Les salaires des grands dirigeants devraient être plafonnés par la loi.", express: true },
-    { text: "Les représentants du personnel devraient avoir plus de droits dans l'entreprise." },
-    { text: "L'assurance chômage doit être plus stricte pour inciter à reprendre un emploi." },
-    { text: "Les emplois précaires, CDD et intérim, devraient être davantage encadrés." },
-    { text: "La négociation doit se faire au niveau de l'entreprise plutôt que de la branche." },
-  ],
-  social: [
-    { text: "Les soins courants devraient être remboursés à 100 % par la Sécurité sociale.", express: true },
-    { text: "Il faut ouvrir plus largement l'hôpital aux capitaux privés." },
-    { text: "Le système de retraites par répartition doit rester le pilier unique." },
-    { text: "Les prestations sociales devraient être conditionnées à des contreparties." },
-    { text: "Le revenu universel est une bonne idée pour lutter contre la pauvreté." },
-    { text: "Les complémentaires santé privées peuvent remplacer une partie du régime public.", express: true },
-    { text: "Pour lutter contre les déserts médicaux, il faut obliger les médecins à s'installer." },
-    { text: "La lutte contre la fraude sociale est aussi importante que l'accès aux droits." },
-    { text: "L'État doit financer un grand plan contre la précarité alimentaire." },
-    { text: "Les allocations doivent être davantage liées à une recherche active d'emploi." },
-  ],
-  education: [
-    { text: "Le collège unique doit rester un principe républicain intangible.", express: true },
-    { text: "L'université doit pouvoir sélectionner ses étudiants à l'entrée." },
-    { text: "Les établissements scolaires doivent pouvoir recruter eux-mêmes leurs enseignants." },
-    { text: "Une allocation d'autonomie pour tous les étudiants est indispensable." },
-    { text: "Les notes et le classement sont utiles à l'école." },
-    { text: "Il faut donner beaucoup plus de moyens aux établissements des quartiers populaires.", express: true },
-    { text: "L'école privée ne devrait plus être financée sur fonds publics." },
-    { text: "L'apprentissage doit être développé dès 15 ans comme voie d'excellence." },
-    { text: "Les programmes doivent valoriser davantage l'effort et l'autorité." },
-    { text: "La mixité sociale à l'école doit être imposée par la carte scolaire." },
-  ],
-  immigration: [
-    { text: "L'immigration est globalement une chance pour la France.", express: true },
-    { text: "Le regroupement familial doit être fortement restreint." },
-    { text: "Les personnes étrangères qui vivent et travaillent ici devraient voter aux élections locales." },
-    { text: "Il faut rétablir des contrôles aux frontières intérieures de l'Europe." },
-    { text: "Les régularisations au cas par cas sont une réponse pragmatique." },
-    { text: "La préférence nationale pour les aides sociales est justifiée.", express: true },
-    { text: "L'accueil des réfugiés est un devoir moral qui doit primer sur les quotas." },
-    { text: "Les demandes d'asile devraient être examinées dans des pays tiers." },
-    { text: "La France doit se doter de quotas migratoires votés par le Parlement." },
-    { text: "La naturalisation doit reposer sur des critères plus stricts, y compris linguistiques." },
-  ],
-  securite: [
-    { text: "Les peines prononcées devraient être systématiquement exécutées, même courtes.", express: true },
-    { text: "La vidéosurveillance et les amendes doivent être développées massivement." },
-    { text: "Il faut légaliser le cannabis pour mieux encadrer sa consommation." },
-    { text: "La perpétuité réelle doit exister pour certains crimes." },
-    { text: "Les mineurs délinquants doivent relever d'une justice plus répressive." },
-    { text: "La détention provisoire est beaucoup trop utilisée en France.", express: true },
-    { text: "Les contrôles au faciès doivent être strictement encadrés et sanctionnés." },
-    { text: "La police doit pouvoir retenir un suspect plus longtemps avant de le présenter à un juge." },
-    { text: "La prévention et l'éducation comptent plus que la répression." },
-    { text: "L'armement de la police municipale doit être généralisé." },
-  ],
-  ecologie: [
-    { text: "La France doit sortir du nucléaire civil d'ici 2035.", express: true },
-    { text: "Les éoliennes défigurent nos paysages et doivent être arrêtées." },
-    { text: "La taxe carbone doit fortement augmenter pour changer les comportements." },
-    { text: "La France doit cesser toute nouvelle exploration d'hydrocarbures." },
-    { text: "Les normes environnementales freinent trop l'agriculture française." },
-    { text: "Il faut interdire les vols intérieurs lorsqu'un train existe.", express: true },
-    { text: "Le nucléaire est une chance pour décarboner notre économie." },
-    { text: "Les zones à faibles émissions devraient être abandonnées." },
-    { text: "Les pesticides de synthèse doivent être progressivement supprimés." },
-    { text: "La rénovation thermique des logements doit être massivement subventionnée." },
-  ],
-  europe: [
-    { text: "La France devrait pouvoir sortir de l'euro si nécessaire.", express: true },
-    { text: "Le Parlement européen doit avoir davantage de pouvoirs.", express: true },
-    { text: "Tout nouveau transfert de compétences à l'Union doit passer par référendum." },
-    { text: "Il faut créer une armée européenne commune." },
-    { text: "La primauté du droit européen sur la loi française est excessive." },
-    { text: "Les frontières de l'espace Schengen doivent pouvoir être suspendues." },
-    { text: "La France doit accepter de partager davantage sa souveraineté budgétaire." },
-    { text: "Le quinquennat est un bon équilibre pour les institutions." },
-    { text: "L'Assemblée nationale devrait être élue à la proportionnelle intégrale." },
-    { text: "Le cumul des mandats doit être totalement interdit." },
-  ],
-  international: [
-    { text: "La France doit quitter le commandement intégré de l'OTAN.", express: true },
-    { text: "Le budget de la défense doit être fortement augmenté.", express: true },
-    { text: "Toute intervention militaire extérieure doit être votée par le Parlement." },
-    { text: "La France doit conserver sa force de dissuasion nucléaire." },
-    { text: "L'aide publique au développement doit être nettement augmentée." },
-    { text: "Les sanctions économiques sont une arme efficace contre les régimes autoritaires." },
-    { text: "La France doit reconnaître l'État palestinien." },
-    { text: "L'Union européenne doit se doter d'une capacité militaire autonome." },
-    { text: "Les décisions de l'ONU doivent primer sur celles des alliances militaires." },
-    { text: "La France doit continuer à exporter des armes vers ses alliés." },
-  ],
-  societe: [
-    { text: "Le mariage pour tous est une avancée qu'il faut préserver.", express: true },
-    { text: "La PMA doit être ouverte à toutes les femmes." },
-    { text: "Le droit à l'IVG devrait être inscrit dans la Constitution." },
-    { text: "Le modèle de la famille traditionnelle doit rester protégé par la loi." },
-    { text: "Une loi doit autoriser l'aide à mourir dans un cadre strict.", express: true },
-    { text: "Le port du voile doit être interdit dans l'espace public." },
-    { text: "Les réseaux sociaux menacent la démocratie et doivent être régulés." },
-    { text: "L'égalité femmes-hommes doit passer par des quotas dans les entreprises." },
-    { text: "La culture doit être financée à la hauteur de son rôle social." },
-    { text: "Un service national obligatoire, y compris pour les femmes, est une bonne idée." },
-  ],
+/** Une banque indépendante par scrutin : 100 questions, 10 par thème. */
+const BANKS: Record<ElectionYear, RawYear> = {
+  2002: RAW_2002,
+  2007: RAW_2007,
+  2012: RAW_2012,
+  2017: RAW_2017,
+  2022: RAW_2022,
 };
 
-export const QUESTIONS: Question[] = THEME_IDS.flatMap((themeId) =>
-  RAW[themeId].map((raw, index) => ({
-    id: `${themeId}-${index + 1}`,
-    themeId,
-    text: raw.text,
-    express: raw.express === true,
-  })),
+const QUESTIONS_PER_THEME = 10;
+const EXPRESS_PER_THEME = 2;
+
+function buildYear(year: ElectionYear, raw: RawYear): Question[] {
+  const questions: Question[] = [];
+  for (const themeId of THEME_IDS) {
+    const entries = raw[themeId];
+    if (!entries) {
+      throw new Error(`Banque ${year} : thème « ${themeId} » absent.`);
+    }
+    entries.forEach(([text, axis, polarity, options], index) => {
+      questions.push({
+        id: `${year}-${themeId}-${index + 1}`,
+        year,
+        themeId,
+        text,
+        express: options?.express === true,
+        axis,
+        polarity,
+        note: options?.note,
+        open: options?.open === true,
+      });
+    });
+  }
+  return questions;
+}
+
+export const QUESTIONS_BY_YEAR: Record<ElectionYear, Question[]> = YEARS.reduce(
+  (acc, year) => {
+    acc[year] = buildYear(year, BANKS[year]);
+    return acc;
+  },
+  {} as Record<ElectionYear, Question[]>,
 );
 
-export const EXPRESS_QUESTIONS = QUESTIONS.filter((q) => q.express);
+export const EXPRESS_QUESTIONS_BY_YEAR: Record<ElectionYear, Question[]> = YEARS.reduce(
+  (acc, year) => {
+    acc[year] = QUESTIONS_BY_YEAR[year].filter((question) => question.express);
+    return acc;
+  },
+  {} as Record<ElectionYear, Question[]>,
+);
+
+/** Les 500 questions, dans l'ordre des scrutins puis des thèmes. */
+export const QUESTIONS: Question[] = YEARS.flatMap((year) => QUESTIONS_BY_YEAR[year]);
 
 export const QUESTION_MAP: Record<string, Question> = QUESTIONS.reduce(
   (acc, question) => {
@@ -161,20 +74,79 @@ export const QUESTION_MAP: Record<string, Question> = QUESTIONS.reduce(
   {} as Record<string, Question>,
 );
 
-export function questionSet(mode: QuizMode): Question[] {
-  return mode === "express" ? EXPRESS_QUESTIONS : QUESTIONS;
+export const TOTAL_QUESTIONS = QUESTIONS.length;
+
+export const QUESTIONS_PER_YEAR = QUESTIONS_BY_YEAR[YEARS[0]].length;
+
+/** Ordre canonique de l'année (partage, fiches candidat, affichage). */
+export function questionsForYear(year: ElectionYear): Question[] {
+  return QUESTIONS_BY_YEAR[year];
 }
 
-export function questionCountForMode(mode: QuizMode): number {
-  return mode === "express" ? EXPRESS_QUESTIONS.length : QUESTIONS.length;
+export function questionSet(year: ElectionYear, mode: QuizMode): Question[] {
+  return mode === "express" ? EXPRESS_QUESTIONS_BY_YEAR[year] : QUESTIONS_BY_YEAR[year];
+}
+
+export function questionCountForMode(year: ElectionYear, mode: QuizMode): number {
+  return questionSet(year, mode).length;
 }
 
 /**
  * Questions dans l'ordre de la session : mélangées à partir de la graine
  * (donc stables d'un rendu et d'un rechargement à l'autre). Sans graine, on
- * retombe sur l'ordre par thème.
+ * retombe sur l'ordre canonique de l'année.
  */
-export function orderedQuestions(mode: QuizMode, seed: number | null): Question[] {
-  const base = questionSet(mode);
+export function orderedQuestions(
+  year: ElectionYear,
+  mode: QuizMode,
+  seed: number | null,
+): Question[] {
+  const base = questionSet(year, mode);
   return seed == null ? base : shuffleWithSeed(base, seed);
 }
+
+/** Contrôles d'intégrité des cinq banques, exécutés à l'import. */
+function validateBanks(): void {
+  const ids = new Set<string>();
+
+  for (const year of YEARS) {
+    const questions = QUESTIONS_BY_YEAR[year];
+    if (questions.length !== THEME_IDS.length * QUESTIONS_PER_THEME) {
+      throw new Error(
+        `Banque ${year} : ${questions.length} questions au lieu de ${THEME_IDS.length * QUESTIONS_PER_THEME}.`,
+      );
+    }
+
+    for (const themeId of THEME_IDS) {
+      const ofTheme = questions.filter((question) => question.themeId === themeId);
+      if (ofTheme.length !== QUESTIONS_PER_THEME) {
+        throw new Error(`Banque ${year}, thème ${themeId} : ${ofTheme.length} questions.`);
+      }
+      const express = ofTheme.filter((question) => question.express);
+      if (express.length !== EXPRESS_PER_THEME) {
+        throw new Error(
+          `Banque ${year}, thème ${themeId} : ${express.length} questions clés au lieu de ${EXPRESS_PER_THEME}.`,
+        );
+      }
+    }
+
+    for (const question of questions) {
+      if (ids.has(question.id)) {
+        throw new Error(`Identifiant de question en double : ${question.id}`);
+      }
+      ids.add(question.id);
+
+      if (!question.id.startsWith(`${year}-`)) {
+        throw new Error(`Identifiant non préfixé par l'année : ${question.id}`);
+      }
+      if (!AXIS_MAP[question.axis]) {
+        throw new Error(`Axe inconnu pour ${question.id} : ${question.axis}`);
+      }
+      if (question.polarity !== 1 && question.polarity !== -1) {
+        throw new Error(`Polarité invalide pour ${question.id} : ${question.polarity}`);
+      }
+    }
+  }
+}
+
+validateBanks();

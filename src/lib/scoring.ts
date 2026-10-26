@@ -1,6 +1,6 @@
-import { CANDIDATES, positionsOf, type Candidate } from "@/data/candidates";
+import { CANDIDATES, positionsById, type Candidate } from "@/data/candidates";
 import type { ElectionYear } from "@/data/elections";
-import { QUESTIONS, questionSet, type Question, type QuizMode } from "@/data/questions";
+import { questionSet, questionsForYear, type Question, type QuizMode } from "@/data/questions";
 import { THEME_IDS, type ThemeId } from "@/data/themes";
 
 export type Weights = Record<ThemeId, number>;
@@ -15,14 +15,6 @@ export const DEFAULT_WEIGHTS: Weights = THEME_IDS.reduce((acc, id) => {
   acc[id] = 1;
   return acc;
 }, {} as Weights);
-
-const QUESTION_INDEX: Record<string, number> = QUESTIONS.reduce(
-  (acc, question, index) => {
-    acc[question.id] = index;
-    return acc;
-  },
-  {} as Record<string, number>,
-);
 
 const CANDIDATES_BY_YEAR: Partial<Record<ElectionYear, Candidate[]>> = CANDIDATES.reduce(
   (acc, candidate) => {
@@ -57,19 +49,19 @@ export interface ScoredCandidate {
   };
 }
 
-export function answeredCount(answers: Answers, questions: Question[] = QUESTIONS): number {
+export function answeredCount(answers: Answers, questions: Question[]): number {
   return questions.filter((question) => answers[question.id] != null).length;
 }
 
 /** Une seule question répondue ne suffit pas : il en faut au moins 5. */
-export function hasEnoughAnswers(answers: Answers, questions: Question[] = QUESTIONS): boolean {
+export function hasEnoughAnswers(answers: Answers, questions: Question[]): boolean {
   return answeredCount(answers, questions) >= MIN_ANSWERS;
 }
 
 export function hasActiveWeights(
   answers: Answers,
   weights: Weights,
-  questions: Question[] = QUESTIONS,
+  questions: Question[],
 ): boolean {
   return questions.some(
     (question) => answers[question.id] != null && (weights[question.themeId] ?? 0) > 0,
@@ -80,9 +72,9 @@ export function scoreCandidate(
   candidate: Candidate,
   answers: Answers,
   weights: Weights,
-  questions: Question[] = QUESTIONS,
+  questions: Question[] = questionsForYear(candidate.year),
 ): ScoredCandidate {
-  const positions = positionsOf(candidate);
+  const positions = positionsById(candidate);
   let weightedSum = 0;
   let weightTotal = 0;
   let answered = 0;
@@ -93,7 +85,7 @@ export function scoreCandidate(
     if (user == null) continue;
     answered += 1;
 
-    const position = positions[QUESTION_INDEX[question.id]];
+    const position = positions[question.id];
     if (position == null) continue;
     compared += 1;
 
@@ -124,7 +116,7 @@ export function rankCandidates(
   year: ElectionYear,
   mode: QuizMode,
 ): ScoredCandidate[] {
-  const questions = questionSet(mode);
+  const questions = questionSet(year, mode);
   return candidatesOfYear(year)
     .map((candidate) => scoreCandidate(candidate, answers, weights, questions))
     .sort((a, b) => {
@@ -140,9 +132,9 @@ export function rankCandidates(
 export function themeScores(
   candidate: Candidate,
   answers: Answers,
-  questions: Question[] = QUESTIONS,
+  questions: Question[] = questionsForYear(candidate.year),
 ): Record<ThemeId, number | null> {
-  const positions = positionsOf(candidate);
+  const positions = positionsById(candidate);
   const buckets: Record<ThemeId, { sum: number; count: number }> = THEME_IDS.reduce(
     (acc, id) => {
       acc[id] = { sum: 0, count: 0 };
@@ -154,7 +146,7 @@ export function themeScores(
   for (const question of questions) {
     const user = answers[question.id];
     if (user == null) continue;
-    const position = positions[QUESTION_INDEX[question.id]];
+    const position = positions[question.id];
     if (position == null) continue;
     buckets[question.themeId].sum += agreement(user, position);
     buckets[question.themeId].count += 1;
@@ -178,17 +170,17 @@ export interface AgreementEntry {
 export function topAgreements(
   candidate: Candidate,
   answers: Answers,
-  questions: Question[] = QUESTIONS,
+  questions: Question[] = questionsForYear(candidate.year),
   options: { limit?: number; direction?: "agree" | "disagree" } = {},
 ): AgreementEntry[] {
   const { limit = 5, direction = "agree" } = options;
-  const positions = positionsOf(candidate);
+  const positions = positionsById(candidate);
   const entries: AgreementEntry[] = [];
 
   for (const question of questions) {
     const user = answers[question.id];
     if (user == null) continue;
-    const position = positions[QUESTION_INDEX[question.id]];
+    const position = positions[question.id];
     if (position == null) continue;
     entries.push({ question, user, candidate: position, value: agreement(user, position) });
   }
@@ -196,22 +188,4 @@ export function topAgreements(
   return entries
     .sort((a, b) => (direction === "agree" ? b.value - a.value : a.value - b.value))
     .slice(0, limit);
-}
-
-export interface EraChampion {
-  year: ElectionYear;
-  best: ScoredCandidate | null;
-}
-
-/** Meilleur candidat de chaque époque pour un jeu de réponses donné. */
-export function championsByYear(
-  answers: Answers,
-  weights: Weights,
-  mode: QuizMode,
-  years: ElectionYear[],
-): EraChampion[] {
-  return years.map((year) => ({
-    year,
-    best: rankCandidates(answers, weights, year, mode)[0] ?? null,
-  }));
 }

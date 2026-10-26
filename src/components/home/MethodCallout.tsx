@@ -14,9 +14,10 @@ export function MethodCallout() {
             <h2 className="text-2xl text-ink sm:text-[1.75rem]">Un outil indicatif, assumé comme tel</h2>
             <p className="mt-2 text-sm leading-relaxed text-ink/65">
               Les positions ne sont pas des citations de programmes : elles sont déduites de quatorze
-              archétypes idéologiques, puis ajustées candidat par candidat sur deux à quatre marqueurs
-              personnels. Une question sans position documentée est exclue du calcul et la couverture est
-              affichée à côté de chaque score.
+              archétypes idéologiques positionnés sur vingt axes, ajustées par quelques exceptions
+              propres à certaines questions, puis candidat par candidat sur deux à quatre marqueurs
+              personnels. Chaque scrutin a ses 100 questions, écrites pour lui. Une question sans
+              position documentée est exclue du calcul et la couverture est affichée à côté du score.
             </p>
             <Link
               to="/methode"

@@ -30,6 +30,16 @@ export function QuestionCard({ question, value, onSelect, onSkip, disabled }: Qu
         {question.text}
       </h1>
 
+      {question.note && (
+        <p
+          data-testid="question-note"
+          className="mt-3 max-w-2xl rounded-xl bg-cream/80 px-3 py-2 text-[12px] leading-relaxed text-ink/50"
+        >
+          <span className="font-semibold text-ink/60">Repère : </span>
+          {question.note}
+        </p>
+      )}
+
       <p className="mt-3 text-sm text-ink/45">
         Êtes-vous d'accord avec cette proposition&nbsp;?
       </p>

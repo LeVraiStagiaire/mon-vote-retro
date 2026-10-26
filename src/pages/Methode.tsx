@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Calculator, Database, Eye, ShieldCheck } from "lucide-react";
+import { ArrowRight, Calculator, Database, Eye, History, ShieldCheck } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
 import { Reveal } from "@/components/Reveal";
 import { ARCHETYPES } from "@/data/archetypes";
+import { AXES } from "@/data/axes";
 import { CANDIDATES } from "@/data/candidates";
-import { QUESTIONS } from "@/data/questions";
+import { ERA_CONTEXTS } from "@/data/contexts";
+import { ELECTIONS, YEARS } from "@/data/elections";
+import { QUESTIONS_PER_YEAR, TOTAL_QUESTIONS } from "@/data/questions";
 import { THEMES } from "@/data/themes";
 
 const Methode = () => {
@@ -32,22 +35,36 @@ const Methode = () => {
           </div>
           <ol className="mt-4 space-y-3 text-sm leading-relaxed text-ink/65">
             <li>
+              <span className="font-semibold text-ink">Cinq banques de questions distinctes</span> :{" "}
+              chaque présidentielle a son propre questionnaire de {QUESTIONS_PER_YEAR} questions,
+              rédigé pour les débats de l'année. Soit au total {TOTAL_QUESTIONS} énoncés, sans aucun
+              doublon d'un scrutin à l'autre.
+            </li>
+            <li>
               <span className="font-semibold text-ink">Quatorze archétypes idéologiques</span> (extrême
               gauche, gauche radicale, social-démocratie, écologie politique, centre social-libéral,
               droite libérale, droite gaulliste, droite conservatrice, souverainisme, droite nationale,
-              ruralité, altermondialisme, gaullisme social, divers) portent chacun une position sur les{" "}
-              {QUESTIONS.length} questions, de « pas du tout d'accord » à « tout à fait d'accord ».
+              ruralité, altermondialisme, gaullisme social, divers) sont positionnés sur{" "}
+              <span className="font-semibold text-ink">{AXES.length} axes idéologiques</span> bipolaires
+              — soit {ARCHETYPES.length * AXES.length} valeurs au lieu de{" "}
+              {ARCHETYPES.length * TOTAL_QUESTIONS}. La position sur une question se déduit de son axe
+              et de sa polarité.
             </li>
             <li>
-              <span className="font-semibold text-ink">Chaque candidat</span> est rattaché à un archétype,
-              puis ajusté sur deux à quatre marqueurs personnels (ex. Chevènement et l'euro, Roussel et le
-              nucléaire, Lassalle et le monde rural).
+              <span className="font-semibold text-ink">Quelques exceptions par question</span>{" "}
+              rétablissent les cas mixtes qu'un axe unique ne restitue pas (le voile dans l'espace
+              public, l'accueil des réfugiés ukrainiens, l'aide à la Grèce en 2012…).
+            </li>
+            <li>
+              <span className="font-semibold text-ink">Chaque candidat</span> est rattaché à un
+              archétype, puis ajusté sur deux à quatre marqueurs personnels de son propre scrutin (ex.
+              Chevènement et l'euro, Roussel et le nucléaire, Lassalle et le monde rural).
             </li>
             <li>
               <span className="font-semibold text-ink">Certaines questions n'ont pas de position</span>{" "}
-              d'archétype : les questions institutionnelles (quinquennat, proportionnelle, cumul des
-              mandats) restent ouvertes, sauf ajustement explicite. Elles ne comptent alors pas dans le
-              score, et la couverture baisse d'autant.
+              d'archétype : les questions institutionnelles (cumul des mandats) restent ouvertes, sauf
+              ajustement explicite. Elles ne comptent alors pas dans le score, et la couverture baisse
+              d'autant.
             </li>
           </ol>
         </section>
@@ -125,11 +142,57 @@ const Methode = () => {
               calcul.
             </li>
             <li>
-              <span className="font-semibold text-ink">Les questions sont rédigées aujourd'hui.</span> Elles
-              sont formulées pour rester compréhensibles en 2002 comme en 2022, ce qui peut créer des
-              anachronismes sur les sujets les plus récents.
+              <span className="font-semibold text-ink">
+                Chaque question est écrite pour l'année, pas par les acteurs de l'année.
+              </span>{" "}
+              Les énoncés reprennent le vocabulaire et les mesures de l'époque, mais restent une
+              interprétation rétrospective : les débats tranchés depuis (le traité de 2005, le mariage
+              pour tous, la sortie du nucléaire) peuvent avantager les profils qui ont été cohérents
+              avec la suite de l'histoire.
+            </li>
+            <li>
+              <span className="font-semibold text-ink">Pas de comparaison entre époques.</span> Les
+              questionnaires étant différents, un score ne vaut que pour son scrutin : les candidats des
+              autres années ne sont pas notés.
             </li>
           </ul>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-ink/8 bg-white p-6 shadow-soft">
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-lavender text-primary">
+              <History className="h-4 w-4" />
+            </span>
+            <h2 className="text-2xl text-ink">4. Le contexte de chaque scrutin</h2>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-ink/65">
+            Chaque questionnaire est adossé à une fiche de contexte — accroche, frise datée, enjeux de
+            campagne, « ce qui n'existait pas encore » — affichée à l'accueil, en tête du questionnaire
+            et sous le classement.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-ink/10 text-[11px] uppercase tracking-[0.12em] text-ink/40">
+                  <th className="py-2 pr-3 font-semibold">Scrutin</th>
+                  <th className="py-2 pr-3 font-semibold">Enjeu dominant</th>
+                  <th className="py-2 font-semibold">Fait marquant</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ELECTIONS.map((election) => {
+                  const context = ERA_CONTEXTS[election.year];
+                  return (
+                    <tr key={election.year} className="border-b border-ink/6 align-top">
+                      <td className="py-3 pr-3 font-semibold text-ink">{election.year}</td>
+                      <td className="py-3 pr-3 text-ink/65">{context.dominantIssue}</td>
+                      <td className="py-3 text-ink/55">{context.fact}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="rounded-[1.75rem] border border-ink/8 bg-white p-6 shadow-soft">
@@ -137,7 +200,7 @@ const Methode = () => {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-agree-soft text-agree">
               <ShieldCheck className="h-4 w-4" />
             </span>
-            <h2 className="text-2xl text-ink">4. Données factuelles & vie privée</h2>
+            <h2 className="text-2xl text-ink">5. Données factuelles & vie privée</h2>
           </div>
           <div className="mt-4 space-y-3 text-sm leading-relaxed text-ink/65">
             <p>
@@ -151,10 +214,12 @@ const Methode = () => {
               envoyé nulle part.
             </p>
             <p className="text-xs text-ink/45">
-              Volume de la base : {QUESTIONS.length} questions, {THEMES.length} thèmes, {ARCHETYPES.length}{" "}
-              archétypes ({ARCHETYPES.length * QUESTIONS.length} positions) et {CANDIDATES.length}{" "}
+              Volume de la base : {TOTAL_QUESTIONS} questions réparties en {YEARS.length} banques de{" "}
+              {QUESTIONS_PER_YEAR}, {THEMES.length} thèmes par scrutin, {ARCHETYPES.length} archétypes ×{" "}
+              {AXES.length} axes ({ARCHETYPES.length * AXES.length} positions) et {CANDIDATES.length}{" "}
               candidats. Les questions sont présentées dans un ordre mélangé, tiré au sort à chaque
-              partie (et conservé pendant toute la session).
+              partie (et conservé pendant toute la session). Le format express reprend les 20 questions
+              clés du scrutin, deux par thème.
             </p>
           </div>
         </section>
@@ -193,6 +258,23 @@ const Methode = () => {
             ))}
           </div>
         </section>
+
+        <section className="rounded-[1.75rem] border border-ink/8 bg-white p-6 shadow-soft">
+          <h2 className="text-2xl text-ink">Les vingt axes</h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink/60">
+            Chaque axe est bipolaire : une position positive va d'un pôle à l'autre, de −2 à +2.
+          </p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {AXES.map((axis) => (
+              <div key={axis.id} className="rounded-xl bg-cream/60 px-3.5 py-2.5">
+                <p className="text-xs font-semibold text-ink/80">{axis.label}</p>
+                <p className="mt-0.5 text-[11px] leading-snug text-ink/45">
+                  + {axis.positivePole} · − {axis.negativePole}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
       </Reveal>
 
       <Reveal>
@@ -200,7 +282,7 @@ const Methode = () => {
           <h2 className="font-display text-3xl text-cream">Prêt à tester vos convictions ?</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-cream/70">
             Vingt questions suffisent pour une première tendance, cent pour un classement vraiment
-            détaillé.
+            détaillé — sur le scrutin de votre choix.
           </p>
           <Link
             to="/"

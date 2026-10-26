@@ -1,15 +1,32 @@
 # MonVote Rétro — de 2002 à 2022
 
 Application React (Vite + TypeScript + Tailwind + shadcn/ui) qui demande de choisir une
-présidentielle passée, pose un questionnaire de 20 ou 100 questions sur 10 thèmes, puis
-calcule la proximité avec les 61 candidats du 1er tour et affiche pour qui on aurait
-probablement voté — avec pondération par thème, radar, fiches candidats, lien de partage
-et export du classement en image PNG.
+présidentielle passée, pose **le questionnaire de ce scrutin** (20 questions clés ou 100
+questions sur 10 thèmes), puis calcule la proximité avec les candidats du 1er tour de
+l'année et affiche pour qui on aurait probablement voté — avec pondération par thème,
+radar, fiches candidats, lien de partage et export du classement en image PNG.
+
+## Cinq questionnaires, pas un seul
+
+Chaque élection a sa propre banque de 100 questions, écrite pour les débats de l'année
+(insécurité et 35 heures en 2002, CPE et bouclier fiscal en 2007, traité budgétaire et
+mariage pour tous en 2012, loi travail et sortie de l'euro en 2017, pouvoir d'achat et
+nucléaire en 2022). Le format Express reprend les 20 questions clés du scrutin, deux par
+thème.
+
+Les questions diffèrent d'une année à l'autre : **les scores ne sont donc pas comparables
+entre époques**. « Rejouer mes réponses » a été retiré, et l'explorateur de candidats ne
+calcule la compatibilité que pour les candidats du scrutin joué.
+
+Un contexte historique (accroche, frise datée, enjeux de campagne, « ce qui n'existait pas
+encore ») est affiché sur l'accueil, en tête du questionnaire et sous le classement.
 
 L'ordre des questions est tiré au sort à chaque nouvelle partie (graine conservée dans la
 session : l'ordre reste identique si l'on recharge la page en cours de route).
 
-Aucun backend : réponses et poids restent dans le `localStorage` du navigateur.
+Aucun backend : réponses et poids restent dans le `localStorage` du navigateur
+(`monvote:session:v2`). Les réponses dont l'identifiant n'appartient pas au questionnaire
+de l'année sont purgées au chargement.
 
 ## Développement
 
@@ -61,16 +78,25 @@ pnpm preview    # simule le site statique servi depuis dist/
 Les specs se lancent depuis le panneau **Tests** de Dyad (il fournit l'URL de base et
 l'isolation des données) :
 
-- `e2e-tests/questionnaire-flow.spec.ts` — accueil → 2012 → express → 20 réponses → résultats,
-  reprise après rechargement, rejeu sur 2017, garde d'accès à `#/resultats`.
-- `e2e-tests/candidates-explorer.spec.ts` — filtres année/parti et fiche candidat.
-- `e2e-tests/share-link.spec.ts` — lien de partage recopié puis rouvert dans un contexte vierge.
+- `e2e-tests/questionnaire-flow.spec.ts` — accueil → 2012 → carte de contexte → express →
+  20 réponses → résultats ; reprise après rechargement ; bandeau de contexte repliable ;
+  confirmation du changement d'époque ; garde d'accès à `#/resultats`.
+- `e2e-tests/candidates-explorer.spec.ts` — filtres année/parti, fiche candidat, et score
+  limité à l'année de la session (« autre scrutin » ailleurs).
+- `e2e-tests/share-link.spec.ts` — lien de partage v2 recopié puis rouvert dans un contexte
+  vierge (dont 2002), et message dédié pour un lien de l'ancienne version.
 - `e2e-tests/export-ranking.spec.ts` — téléchargement de l'image PNG du classement.
 
 ## Données
 
-Les positions des candidats sont construites à la main : 14 archétypes idéologiques ×
-100 questions (`src/data/archetypes.ts`), plus 2 à 4 ajustements personnels par candidat
-(`src/data/candidates.ts`). La page **Méthode** de l'application documente l'algorithme,
-un exemple chiffré et les limites. Les scores du 1er tour sont les résultats officiels
-arrondis (ministère de l'Intérieur) ; l'outil est indépendant et non affilié.
+Les positions des candidats sont construites à la main : 14 archétypes idéologiques
+positionnés sur 20 axes (`src/data/archetypes.ts`, `src/data/axes.ts`), quelques exceptions
+par question (`src/data/archetypeExceptions.ts`), puis 2 à 4 ajustements personnels par
+candidat (`src/data/candidates.ts`). Les cinq banques de questions vivent dans
+`src/data/questions/` et sont validées à l'import (100 questions par année, 10 par thème,
+2 questions clés par thème, identifiants uniques préfixés par l'année) : une incohérence fait
+échouer le build. Les contextes historiques sont dans `src/data/contexts.ts`.
+
+La page **Méthode** de l'application documente l'algorithme, un exemple chiffré et les
+limites. Les scores du 1er tour sont les résultats officiels arrondis (ministère de
+l'Intérieur) ; l'outil est indépendant et non affilié.

@@ -1,9 +1,9 @@
 import { isElectionYear, type ElectionYear } from "@/data/elections";
-import { QUESTIONS, type QuizMode } from "@/data/questions";
+import { questionsForYear, type QuizMode } from "@/data/questions";
 import { THEME_IDS } from "@/data/themes";
 import { DEFAULT_WEIGHTS, MAX_WEIGHT, type Answers, type Weights } from "./scoring";
 
-const VERSION = "v1";
+const VERSION = "v2";
 
 const VALUE_TO_CHAR: Record<number, string> = {
   [-2]: "a",
@@ -28,6 +28,10 @@ export interface SharedPayload {
   weights: Weights;
 }
 
+export type ShareDecodeResult =
+  | { ok: true; payload: SharedPayload }
+  | { ok: false; reason: "legacy" | "invalid" };
+
 function toBase64Url(input: string): string {
   return btoa(unescape(encodeURIComponent(input)))
     .replace(/\+/g, "-")
@@ -42,10 +46,14 @@ function fromBase64Url(input: string): string {
 }
 
 export function encodeShare(payload: SharedPayload): string {
-  const answers = QUESTIONS.map((question) => {
-    const value = payload.answers[question.id];
-    return value == null ? "-" : VALUE_TO_CHAR[value] ?? "-";
-  }).join("");
+  // 100 caractères alignés sur l'ordre canonique des questions de l'année :
+  // un lien reste lisible même si l'ordre de session est mélangé.
+  const answers = questionsForYear(payload.year)
+    .map((question) => {
+      const value = payload.answers[question.id];
+      return value == null ? "-" : VALUE_TO_CHAR[value] ?? "-";
+    })
+    .join("");
 
   const weights = THEME_IDS.map((themeId) => {
     const weight = Math.max(0, Math.min(MAX_WEIGHT, Math.round(payload.weights[themeId] ?? 1)));
@@ -57,46 +65,57 @@ export function encodeShare(payload: SharedPayload): string {
   );
 }
 
-export function decodeShare(token: string | null | undefined): SharedPayload | null {
-  if (!token) return null;
+export function decodeShareResult(token: string | null | undefined): ShareDecodeResult {
+  if (!token) return { ok: false, reason: "invalid" };
 
   let decoded: string;
   try {
     decoded = fromBase64Url(token);
   } catch {
-    return null;
+    return { ok: false, reason: "invalid" };
   }
 
   const parts = decoded.split("~");
-  if (parts.length !== 5) return null;
+  if (parts.length !== 5) return { ok: false, reason: "invalid" };
 
   const [version, rawYear, rawMode, rawAnswers, rawWeights] = parts;
-  if (version !== VERSION) return null;
+  if (version !== VERSION) {
+    return { ok: false, reason: version.startsWith("v") ? "legacy" : "invalid" };
+  }
 
   const year = Number(rawYear);
-  if (!isElectionYear(year)) return null;
-  if (rawMode !== "express" && rawMode !== "complet") return null;
-  if (rawAnswers.length !== QUESTIONS.length) return null;
-  if (rawWeights.length !== THEME_IDS.length) return null;
+  if (!isElectionYear(year)) return { ok: false, reason: "invalid" };
+  if (rawMode !== "express" && rawMode !== "complet") return { ok: false, reason: "invalid" };
+
+  const questions = questionsForYear(year);
+  if (rawAnswers.length !== questions.length) return { ok: false, reason: "invalid" };
+  if (rawWeights.length !== THEME_IDS.length) return { ok: false, reason: "invalid" };
 
   const answers: Answers = {};
   for (let i = 0; i < rawAnswers.length; i += 1) {
     const char = rawAnswers[i];
     if (char === "-") {
-      answers[QUESTIONS[i].id] = null;
+      answers[questions[i].id] = null;
       continue;
     }
     const value = CHAR_TO_VALUE[char];
-    if (value === undefined) return null;
-    answers[QUESTIONS[i].id] = value;
+    if (value === undefined) return { ok: false, reason: "invalid" };
+    answers[questions[i].id] = value;
   }
 
   const weights: Weights = { ...DEFAULT_WEIGHTS };
   for (let i = 0; i < rawWeights.length; i += 1) {
     const digit = Number(rawWeights[i]);
-    if (!Number.isInteger(digit) || digit < 0 || digit > MAX_WEIGHT) return null;
+    if (!Number.isInteger(digit) || digit < 0 || digit > MAX_WEIGHT) {
+      return { ok: false, reason: "invalid" };
+    }
     weights[THEME_IDS[i]] = digit;
   }
 
-  return { year, mode: rawMode, answers, weights };
+  return { ok: true, payload: { year, mode: rawMode, answers, weights } };
+}
+
+export function decodeShare(token: string | null | undefined): SharedPayload | null {
+  const result = decodeShareResult(token);
+  return result.ok ? result.payload : null;
 }

@@ -9,9 +9,11 @@ import type { ScoredCandidate } from "@/lib/scoring";
 interface CandidateCardProps {
   candidate: Candidate;
   scored?: ScoredCandidate | null;
+  /** Candidat d'un autre scrutin : son questionnaire diffère, donc pas de score. */
+  otherEra?: boolean;
 }
 
-export function CandidateCard({ candidate, scored }: CandidateCardProps) {
+export function CandidateCard({ candidate, scored, otherEra }: CandidateCardProps) {
   const percent = scored?.score == null ? null : Math.round(scored.score * 100);
 
   return (
@@ -59,9 +61,16 @@ export function CandidateCard({ candidate, scored }: CandidateCardProps) {
           </div>
         )}
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           {scored ? (
             <CoverageBadge coverage={scored.coverage} lowCoverage={scored.flags.lowCoverage} />
+          ) : otherEra ? (
+            <span
+              data-testid={`other-era-${candidate.id}`}
+              className="rounded-full bg-ink/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink/40"
+            >
+              Autre scrutin
+            </span>
           ) : (
             <span className="text-[10px] uppercase tracking-[0.12em] text-ink/30">
               {candidate.partyShort}

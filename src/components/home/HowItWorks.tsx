@@ -14,7 +14,7 @@ const STEPS = [
   {
     number: "03",
     title: "Vous explorez",
-    text: "Classement complet, radar des thèmes, fiche détaillée par candidat et rejeu de vos réponses sur les autres années.",
+    text: "Classement complet, radar des thèmes, fiche détaillée par candidat, et le contexte politique de l'année choisie sous votre classement.",
   },
 ];
 

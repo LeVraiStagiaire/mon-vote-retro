@@ -1,6 +1,5 @@
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -17,6 +16,7 @@ import {
   EMPTY_SESSION,
   clearSession,
   loadSession,
+  purgeAnswers,
   saveSession,
   type QuizSession,
 } from "@/lib/storage";
@@ -34,6 +34,11 @@ type Action =
   | { type: "restart" }
   | { type: "hydrate"; session: SharedPayload };
 
+function questionsFor(session: QuizSession): Question[] {
+  if (session.year == null) return [];
+  return orderedQuestions(session.year, session.mode, session.seed);
+}
+
 function firstUnanswered(answers: Answers, questions: Question[]): number {
   const index = questions.findIndex((question) => answers[question.id] == null);
   return index === -1 ? 0 : index;
@@ -46,10 +51,20 @@ function clampIndex(index: number, length: number): number {
 
 function reducer(state: QuizSession, action: Action): QuizSession {
   switch (action.type) {
-    case "selectYear":
-      return { ...state, year: action.year };
+    case "selectYear": {
+      // Recliquer sur l'année courante ne doit rien effacer.
+      if (state.year === action.year) return state;
+      return {
+        ...state,
+        year: action.year,
+        answers: {},
+        index: 0,
+        status: "idle",
+        seed: null,
+      };
+    }
     case "setMode": {
-      const questions = orderedQuestions(action.mode, state.seed);
+      const questions = questionsFor({ ...state, mode: action.mode });
       const index = state.status === "running" ? firstUnanswered(state.answers, questions) : 0;
       return { ...state, mode: action.mode, index };
     }
@@ -57,7 +72,7 @@ function reducer(state: QuizSession, action: Action): QuizSession {
       // Nouvelle graine uniquement si la partie n'en a pas encore : reprendre
       // une session ne rebat pas les cartes.
       const seed = state.seed ?? randomSeed();
-      const questions = orderedQuestions(state.mode, seed);
+      const questions = questionsFor({ ...state, seed });
       return {
         ...state,
         seed,
@@ -71,18 +86,18 @@ function reducer(state: QuizSession, action: Action): QuizSession {
         answers: { ...state.answers, [action.questionId]: action.value },
       };
     case "goTo": {
-      const questions = orderedQuestions(state.mode, state.seed);
+      const questions = questionsFor(state);
       return { ...state, index: clampIndex(action.index, questions.length) };
     }
     case "next": {
-      const questions = orderedQuestions(state.mode, state.seed);
+      const questions = questionsFor(state);
       if (state.index >= questions.length - 1) {
         return { ...state, index: questions.length - 1, status: "done" };
       }
       return { ...state, index: state.index + 1 };
     }
     case "previous": {
-      const questions = orderedQuestions(state.mode, state.seed);
+      const questions = questionsFor(state);
       return { ...state, index: clampIndex(state.index - 1, questions.length) };
     }
     case "setWeight":
@@ -104,13 +119,15 @@ function reducer(state: QuizSession, action: Action): QuizSession {
         weights: { ...DEFAULT_WEIGHTS },
       };
     case "hydrate": {
-      const questions = orderedQuestions(action.session.mode, null);
+      const payload = action.session;
+      const questions = orderedQuestions(payload.year, payload.mode, null);
+      const answers = purgeAnswers(payload.answers, payload.year);
       return {
-        year: action.session.year,
-        mode: action.session.mode,
-        answers: action.session.answers,
-        weights: action.session.weights,
-        index: firstUnanswered(action.session.answers, questions),
+        year: payload.year,
+        mode: payload.mode,
+        answers,
+        weights: payload.weights,
+        index: firstUnanswered(answers, questions),
         status: "done",
         seed: null,
       };
@@ -159,8 +176,8 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   }, [session]);
 
   const questions = useMemo(
-    () => orderedQuestions(session.mode, session.seed),
-    [session.mode, session.seed],
+    () => (session.year == null ? [] : orderedQuestions(session.year, session.mode, session.seed)),
+    [session.mode, session.seed, session.year],
   );
   const answered = useMemo(
     () => answeredCount(session.answers, questions),

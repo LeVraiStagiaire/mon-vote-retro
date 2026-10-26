@@ -20,8 +20,13 @@ const CandidateDetail = () => {
   const { id } = useParams<{ id: string }>();
   const candidate = id ? CANDIDATE_MAP[id] : undefined;
   const { answers, weights, session } = useQuiz();
-  const questions = questionSet(session.mode);
-  const enough = hasEnoughAnswers(answers, questions);
+  // Un candidat n'est comparable qu'avec le questionnaire de son propre scrutin.
+  const sameEra = candidate != null && session.year === candidate.year;
+  const questions = useMemo(
+    () => (candidate && sameEra ? questionSet(candidate.year, session.mode) : []),
+    [candidate, sameEra, session.mode],
+  );
+  const enough = sameEra && hasEnoughAnswers(answers, questions);
 
   const scored = useMemo(
     () => (candidate && enough ? scoreCandidate(candidate, answers, weights, questions) : null),
@@ -88,6 +93,14 @@ const CandidateDetail = () => {
                 Qualifié au 2d tour
               </span>
             )}
+            {!sameEra && (
+              <span
+                data-testid="candidate-other-era"
+                className="rounded-full bg-ink/5 px-3 py-1 text-xs font-medium text-ink/55"
+              >
+                Autre scrutin — pas de score
+              </span>
+            )}
             {scored && <CoverageBadge coverage={scored.coverage} lowCoverage={scored.flags.lowCoverage} />}
           </div>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink/65">{candidate.bio}</p>
@@ -111,7 +124,24 @@ const CandidateDetail = () => {
         </header>
       </Reveal>
 
-      {!enough && (
+      {!sameEra && (
+        <div className="mt-4 animate-fade-slide-in flex flex-col gap-3 rounded-[1.5rem] border border-ink/8 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm leading-relaxed text-ink/60">
+            Chaque scrutin a son propre questionnaire : la compatibilité n'est calculée que pour les
+            candidats de {session.year ? `la présidentielle ${session.year}` : "l'époque que vous avez jouée"}.
+            Les positions ci-dessous restent consultables, mais aucun score ne peut être établi.
+          </p>
+          <Link
+            to="/"
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-primary px-5 text-sm font-semibold text-cream"
+          >
+            Explorer
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      )}
+
+      {sameEra && !enough && (
         <div className="mt-4 animate-fade-slide-in flex flex-col gap-3 rounded-[1.5rem] border border-ink/8 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm leading-relaxed text-ink/60">
             Les positions ci-dessous sont celles de l'archétype et de ses ajustements. Répondez au

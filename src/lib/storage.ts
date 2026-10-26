@@ -1,9 +1,10 @@
 import { isElectionYear, type ElectionYear } from "@/data/elections";
-import type { QuizMode } from "@/data/questions";
+import { questionsForYear, type QuizMode } from "@/data/questions";
 import { THEME_IDS, type ThemeId } from "@/data/themes";
 import { DEFAULT_WEIGHTS, MAX_WEIGHT, type Answers, type Weights } from "./scoring";
 
-export const STORAGE_KEY = "monvote:session:v1";
+export const STORAGE_KEY = "monvote:session:v2";
+const LEGACY_STORAGE_KEY = "monvote:session:v1";
 
 export type SessionStatus = "idle" | "running" | "done";
 
@@ -28,10 +29,28 @@ export const EMPTY_SESSION: QuizSession = {
   seed: null,
 };
 
+/**
+ * Ne conserve que les réponses appartenant au questionnaire de l'année : les
+ * identifiants portent l'année, donc toute réponse orpheline est écartée au
+ * chargement (aucune fuite de score d'un scrutin à l'autre).
+ */
+export function purgeAnswers(answers: Answers, year: ElectionYear | null): Answers {
+  if (year == null) return {};
+  const allowed = new Set(questionsForYear(year).map((question) => question.id));
+  const purged: Answers = {};
+  for (const [key, value] of Object.entries(answers)) {
+    if (allowed.has(key)) purged[key] = value;
+  }
+  return purged;
+}
+
 export function loadSession(): QuizSession | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
+    if (!raw) {
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+      return null;
+    }
     const parsed = JSON.parse(raw) as Partial<QuizSession>;
     if (!parsed || typeof parsed !== "object") return null;
 
@@ -67,7 +86,15 @@ export function loadSession(): QuizSession | null {
         ? Math.floor(parsed.seed)
         : null;
 
-    return { year, mode, answers, weights, index, status, seed };
+    return {
+      year,
+      mode,
+      answers: purgeAnswers(answers, year),
+      weights,
+      index,
+      status: year == null ? "idle" : status,
+      seed,
+    };
   } catch {
     return null;
   }
@@ -76,6 +103,7 @@ export function loadSession(): QuizSession | null {
 export function saveSession(session: QuizSession): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
   } catch {
     // Stockage indisponible (mode privé strict, quota) : la session reste en mémoire.
   }
@@ -84,6 +112,7 @@ export function saveSession(session: QuizSession): void {
 export function clearSession(): void {
   try {
     window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
   } catch {
     // Rien à faire.
   }

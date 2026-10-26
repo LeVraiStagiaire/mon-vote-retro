@@ -1,19 +1,11 @@
 import { ThumbsDown, ThumbsUp, Minus } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
-import { positionsOf, type Candidate } from "@/data/candidates";
-import { QUESTIONS } from "@/data/questions";
+import { positionsById, type Candidate } from "@/data/candidates";
+import { questionsForYear } from "@/data/questions";
 import { THEMES } from "@/data/themes";
 import { positionLabel } from "@/lib/format";
 import { agreement, type Answers } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
-
-const QUESTION_INDEX: Record<string, number> = QUESTIONS.reduce(
-  (acc, question, index) => {
-    acc[question.id] = index;
-    return acc;
-  },
-  {} as Record<string, number>,
-);
 
 interface PositionListProps {
   candidate: Candidate;
@@ -22,27 +14,23 @@ interface PositionListProps {
 }
 
 export function PositionList({ candidate, answers, hasAnswers }: PositionListProps) {
-  const positions = positionsOf(candidate);
+  const positions = positionsById(candidate);
+  const yearQuestions = questionsForYear(candidate.year);
 
   return (
     <div className="space-y-4">
       {THEMES.map((theme, themeIndex) => {
-        const questions = QUESTIONS.filter((question) => question.themeId === theme.id);
+        const questions = yearQuestions.filter((question) => question.themeId === theme.id);
         const Icon = theme.icon;
-        const compared = questions.filter((question) => {
-          const position = positions[QUESTION_INDEX[question.id]];
-          return position != null && answers[question.id] != null;
-        });
+        const compared = questions.filter(
+          (question) => positions[question.id] != null && answers[question.id] != null,
+        );
         const themeScore =
           compared.length === 0
             ? null
             : compared.reduce(
                 (sum, question) =>
-                  sum +
-                  agreement(
-                    answers[question.id] as number,
-                    positions[QUESTION_INDEX[question.id]] as number,
-                  ),
+                  sum + agreement(answers[question.id] as number, positions[question.id] as number),
                 0,
               ) / compared.length;
 
@@ -80,7 +68,7 @@ export function PositionList({ candidate, answers, hasAnswers }: PositionListPro
 
             <ul className="mt-3 divide-y divide-ink/8">
               {questions.map((question) => {
-                const position = positions[QUESTION_INDEX[question.id]];
+                const position = positions[question.id];
                 const user = answers[question.id];
                 const value =
                   position != null && user != null ? agreement(user as number, position) : null;

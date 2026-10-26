@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { ArrowRight, X } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
+import { EraContextPanel } from "@/components/era/EraContextPanel";
 import { QuizProgress } from "@/components/quiz/QuizProgress";
 import { QuestionCard } from "@/components/quiz/QuestionCard";
 import { QuizNav } from "@/components/quiz/QuizNav";
@@ -151,6 +152,10 @@ const Questionnaire = () => {
       </div>
 
       <div className="mt-4">
+        <EraContextPanel year={session.year} index={session.index} />
+      </div>
+
+      <div className="mt-3">
         <QuizProgress index={session.index} total={questions.length} answered={answered} />
       </div>
 
