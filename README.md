@@ -3,7 +3,8 @@
 Application React (Vite + TypeScript + Tailwind + shadcn/ui) qui demande de choisir une
 présidentielle passée, pose un questionnaire de 20 ou 100 questions sur 10 thèmes, puis
 calcule la proximité avec les 61 candidats du 1er tour et affiche pour qui on aurait
-probablement voté — avec pondération par thème, radar, fiches candidats et lien de partage.
+probablement voté — avec pondération par thème, radar, fiches candidats, lien de partage
+et export du classement en image PNG.
 
 Aucun backend : réponses et poids restent dans le `localStorage` du navigateur.
 
@@ -61,6 +62,7 @@ l'isolation des données) :
   reprise après rechargement, rejeu sur 2017, garde d'accès à `#/resultats`.
 - `e2e-tests/candidates-explorer.spec.ts` — filtres année/parti et fiche candidat.
 - `e2e-tests/share-link.spec.ts` — lien de partage recopié puis rouvert dans un contexte vierge.
+- `e2e-tests/export-ranking.spec.ts` — téléchargement de l'image PNG du classement.
 
 ## Données
 

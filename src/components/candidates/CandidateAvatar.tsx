@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { initials, type Candidate } from "@/data/candidates";
+import { readCachedThumbnail, resolveThumbnail } from "@/lib/wiki";
 import { cn } from "@/lib/utils";
-
-const CACHE_PREFIX = "monvote:wiki:v1:";
-const memoryCache = new Map<string, string | null>();
 
 const SIZES = {
   sm: "h-10 w-10 text-sm",
@@ -12,33 +10,10 @@ const SIZES = {
   xl: "h-28 w-28 rounded-[2rem] text-4xl sm:h-36 sm:w-36",
 };
 
-function readCache(title: string): string | null | undefined {
-  if (memoryCache.has(title)) return memoryCache.get(title) ?? null;
-  try {
-    const raw = window.localStorage.getItem(CACHE_PREFIX + title);
-    if (raw == null) return undefined;
-    const value = raw === "none" ? null : raw;
-    memoryCache.set(title, value);
-    return value;
-  } catch {
-    return undefined;
-  }
-}
-
-function writeCache(title: string, value: string | null) {
-  memoryCache.set(title, value);
-  try {
-    window.localStorage.setItem(CACHE_PREFIX + title, value ?? "none");
-  } catch {
-    // Cache indisponible : on garde uniquement la valeur en mémoire.
-  }
-}
-
 interface CandidateAvatarProps {
   candidate: Candidate;
   size?: keyof typeof SIZES;
   className?: string;
-  priority?: boolean;
 }
 
 /**
@@ -47,11 +22,13 @@ interface CandidateAvatarProps {
  * couleurs du parti prend le relais : jamais de carré cassé.
  */
 export function CandidateAvatar({ candidate, size = "md", className }: CandidateAvatarProps) {
-  const [src, setSrc] = useState<string | null>(() => readCache(candidate.wikiTitle) ?? null);
+  const [src, setSrc] = useState<string | null>(
+    () => readCachedThumbnail(candidate.wikiTitle) ?? null,
+  );
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    const cached = readCache(candidate.wikiTitle);
+    const cached = readCachedThumbnail(candidate.wikiTitle);
     if (cached !== undefined) {
       setSrc(cached);
       return;
@@ -59,29 +36,14 @@ export function CandidateAvatar({ candidate, size = "md", className }: Candidate
 
     let cancelled = false;
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 6000);
-
-    fetch(
-      `https://fr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(candidate.wikiTitle)}?redirect=true`,
-      { signal: controller.signal },
-    )
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: { thumbnail?: { source?: string } } | null) => {
-        if (cancelled) return;
-        const url = data?.thumbnail?.source ?? null;
-        writeCache(candidate.wikiTitle, url);
-        setSrc(url);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        writeCache(candidate.wikiTitle, null);
-        setSrc(null);
-      })
-      .finally(() => window.clearTimeout(timeout));
+    resolveThumbnail(candidate.wikiTitle, { signal: controller.signal, timeoutMs: 6000 }).then(
+      (url) => {
+        if (!cancelled) setSrc(url);
+      },
+    );
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timeout);
       controller.abort();
     };
   }, [candidate.wikiTitle]);

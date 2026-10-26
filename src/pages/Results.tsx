@@ -143,7 +143,13 @@ const Results = () => {
 
           <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-4">
-              <RankingList ranking={ranking} year={year} />
+              <RankingList
+                ranking={ranking}
+                year={year}
+                mode={session.mode}
+                answered={answered}
+                total={questions.length}
+              />
               <ThemeWeights />
             </div>
             <div className="space-y-4">
