@@ -36,6 +36,12 @@ const Questionnaire = () => {
     [],
   );
 
+  // Sur mobile, la réponse se donne souvent après avoir fait défiler la carte :
+  // on revient en haut pour que l'énoncé de la question suivante soit visible.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [session.index, interlude]);
+
   const commit = useCallback(
     (value: number | null) => {
       if (!currentQuestion) return;
