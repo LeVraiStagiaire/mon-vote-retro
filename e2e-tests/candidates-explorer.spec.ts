@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("explorer les candidats par année et ouvrir une fiche", async ({ page }) => {
-  await page.goto("/candidats");
+  await page.goto("/#/candidats");
 
   await expect(page.getByRole("heading", { name: "Les 61 candidats du 1er tour" })).toBeVisible();
   await expect(page.getByTestId(/^candidate-card-/)).toHaveCount(61);

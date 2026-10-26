@@ -52,7 +52,8 @@ test("répondre au questionnaire express et obtenir un résultat", async ({ page
 });
 
 test("les pages de résultats sont protégées sans session", async ({ page }) => {
-  await page.goto("/resultats");
-  await expect(page).toHaveURL("/");
+  await page.goto("/#/resultats");
+  await expect(page).toHaveURL(/#\/$/);
   await expect(page.getByRole("heading", { name: /Pour qui auriez-vous/ })).toBeVisible();
+  await expect(page.getByTestId("winner-name")).toHaveCount(0);
 });

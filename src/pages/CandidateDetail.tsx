@@ -141,13 +141,18 @@ const CandidateDetail = () => {
 
       <div className="mt-6 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar">
         {THEMES.map((theme) => (
-          <a
+          <button
             key={theme.id}
-            href={`#theme-${theme.id}`}
+            type="button"
+            onClick={() =>
+              document
+                .getElementById(`theme-${theme.id}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
             className="shrink-0 rounded-full border border-ink/10 bg-white px-3.5 py-1.5 text-xs font-semibold text-ink/60 transition hover:text-ink"
           >
             {theme.shortLabel}
-          </a>
+          </button>
         ))}
       </div>
 

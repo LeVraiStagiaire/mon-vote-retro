@@ -45,13 +45,16 @@ export function Hero() {
             className="mt-8 flex animate-reveal-up flex-col gap-3 sm:flex-row sm:items-center"
             style={{ animationDelay: "300ms" }}
           >
-            <a
-              href="#epoques"
+            <button
+              type="button"
+              onClick={() =>
+                document.getElementById("epoques")?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-cream shadow-soft transition hover:bg-primary/90"
             >
               Choisir une époque
               <ArrowRight className="h-4 w-4" />
-            </a>
+            </button>
             <Link
               to="/methode"
               className="inline-flex h-12 items-center justify-center rounded-full border border-ink/10 bg-white px-6 text-sm font-semibold text-ink/70 transition hover:border-ink/20 hover:text-ink"

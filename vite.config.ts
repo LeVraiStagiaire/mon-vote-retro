@@ -3,7 +3,10 @@ import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-export default defineConfig(() => ({
+export default defineConfig(()  => ({
+  // Base relative : les assets fonctionnent aussi bien à la racine d'un
+  // domaine que dans un sous-dossier (GitHub Pages : /<repo>/).
+  base: "./",
   server: {
     host: "::",
     port: 8080,

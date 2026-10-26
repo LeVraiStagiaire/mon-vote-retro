@@ -12,7 +12,9 @@ export function ShareBar() {
 
   const handleCopy = async () => {
     if (session.year == null) return;
-    const link = `${window.location.origin}/resultats?s=${encodeShare({
+    let base = window.location.pathname.replace(/index\.html$/, "");
+    if (!base.endsWith("/")) base += "/";
+    const link = `${window.location.origin}${base}#/resultats?s=${encodeShare({
       year: session.year,
       mode: session.mode,
       answers,
